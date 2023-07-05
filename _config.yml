@@ -32,6 +32,7 @@ plugins:
   - liquid_reading_time
   - jemoji
   - jekyll-toc
+  - jekyll-seo-tag
 
 # Exclude from processing.
 # The following items will not be processed, by default. Create a custom list
