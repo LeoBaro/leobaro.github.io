@@ -17,9 +17,15 @@ toc: true
 
 Introduction
 ============
+<ul>
+<li>Alert boxes</li>
+<li>Last grammarly (final part)</li>
+<li>Q,V,K explanation</li>
+</ul>
+
 The *Transformer* architecture defined a new standard for modern neural network design, leading to the development of the current state-of-the-art models such as *GPT*, *BERT*, *CLIP* and enabling the training of robust multi-modal architectures. This post assumes a basic understanding of the AutoEncoder architecture and recurrent models.
 
-<a target="_blank" href="https://www.amazon.it/Natural-Language-Processing-Transformers-Applications/dp/1098136799/ref=sr_1_1?keywords=natural+language+processing+with+transformers&amp;qid=1688565977&amp;sprefix=Natural+lan%252Caps%252C113&amp;sr=8-1&_encoding=UTF8&tag=leobaro-21&linkCode=ur2&linkId=036ca3124da4daab7b40fe2a7c8e21de&camp=3414&creative=21718">🔥🔥🔥 One of the best book on Transformers and the 🤗Hugging Face library🔥🔥🔥</a>
+<a target="_blank" href="https://www.amazon.it/Natural-Language-Processing-Transformers-Applications/dp/1098136799/ref=sr_1_1?keywords=natural+language+processing+with+transformers&amp;qid=1688565977&amp;sprefix=Natural+lan%252Caps%252C113&amp;sr=8-1&_encoding=UTF8&tag=leobaro-21&linkCode=ur2&linkId=036ca3124da4daab7b40fe2a7c8e21de&camp=3414&creative=21718">🔥🔥🔥 One of the best book on Transformers, NLP and 🤗Hugging Face 🔥🔥🔥</a>
 
 Sequence-to-sequence modeling
 =============================
@@ -153,9 +159,9 @@ There're several ways, but the most common is the *scaled dot-product attention*
 
 Let's break it down: 
 - We start by projecting the input embeddings using three separate linear projections with learnable weights. These linear projections transform the input embeddings into different spaces, enabling the model to effectively attend to different parts of the sequence. 
-- The projected Query (Q) and Key (K) vectors are multiplied together (K is transposed to allow the matrix multiplication). The output is a $n*n$ matrix of attention scores where $n$ is the number of tokens in the input sequence. The dot products of the matrix multiplications can be seen as a similarity function: a small attention score means that the two embeddings don't share much in common.  
+- The projected Query ($Q$) and Key ($K$) vectors are multiplied together ($K$ is transposed to allow the matrix multiplication). The output is a $n*n$ matrix of attention scores where $n$ is the number of tokens in the input sequence. The dot products of the matrix multiplications can be seen as a similarity function: a small attention score means that the two embeddings don't share much in common.  
 - Since dot products can, in general, produce arbitrarily large numbers and undermine the training process, the output is first scaled by a factor $sqrt(768)$ (where 768 is the embedding dimension in this example) to normalize the variance and then a normalization is applied with the softmax function. The output matrix is called *attention weights*.  
-- Finally, the projected V embeddings are mixed together, computing a linear combination using the attention weights as coefficients: $v_i' = \sum_{j=1}^{n} w_{ij}v_j$  
+- Finally, the projected Value ($V$) embeddings are mixed together, computing a linear combination using the attention weights as coefficients: $v_i' = \sum_{j=1}^{n} w_{ij}v_j$  
 
 *Figure 6* visualizes individual neurons in the query and key vectors and shows how they are used to compute the attention weights for the word *watch*.
 
@@ -189,7 +195,7 @@ Finally, *Figure 8* shows another visualization to explain self-attention.
 The multi-head self-attention module treats tokens as interchangeable, regardless of their positions in the sequence. In simpler terms, the Transformer model would understand the same meaning from the sentences "I love pizza." and "love I pizza,", because it focuses solely on the content of the words. It doesn't rely on the specific order or position of the words to comprehend the sentence, and this property is called *permuation equivariant*.
 > :bulb: **Let's enrich the tokens embedding with positional information!**
 
-The most popular way is to add another embedding layer with trainable parameters and sum the token embeddings with the positional embedding before passing the result to the multi-head self-attention module. This new layer uses the token position index instead of the token ID. During the model pre-training, it learns how to encode the position of the tokens. 
+To account for the order of the words, the most popular way is to add another embedding layer with trainable parameters and sum the token embeddings with the positional embedding before passing the result to the multi-head self-attention module. This new layer uses the token position index instead of the token ID. During the model pre-training, it learns how to encode the position of the tokens. 
 
 | <img src="/assets/2023-06-29-transformers/embeds.jpg" alt="embeddings" />| 
 |:--:|                 
@@ -211,7 +217,7 @@ Let's build the Encoder and Decoder modules separately.
 
 
 #### The Encoder
-The _Transformer_ architecture **comprises a stack (N) of Encoders modules**. We must introduce three more components to build our first encoder layer: the feed-forward network, layer normalization, and skip connections. 
+The _Transformer_ architecture **comprises a stack (N=6) of Encoders modules**. We must introduce three more components to build our first encoder module: the feed-forward network, layer normalization, and skip connections. 
 
 | <img src="/assets/2023-06-29-transformers/encoder.jpg" alt="encoder" width="200"/>| 
 |:--:|             
@@ -246,14 +252,52 @@ As we can see from *Figure 11* the skip connections and the layer normalization 
 
 #### The Decoder
 
+We're really close to the end of this journey! We just need to introduce the Decoder network, but actually it reuses almost the same components we talked about. 
 
 | <img src="/assets/2023-06-29-transformers/decoder.jpg" alt="decoder" width="200"/>| 
-|:--:|             
-The Decoder module. Credits: [A. Vaswani, et al. (2017)](https://arxiv.org/pdf/1706.03762.pdf) |
+|:--:| 
+| *Figure 14*: Decoder network. Credits: [A. Vaswani, et al. (2017)](https://arxiv.org/pdf/1706.03762.pdf) |
 
 
-### Training
+The objective of the Decoder network is to predict the next word in a sentence given the words it has already predicted, and the contextualized embedding from each Encoder layer. The decoder is also composed of a stack of $N=6$ identical layers. The main differences from the Encoder network is that the Decoder has two slightly different attention layers: a *masked multi-head self-attention layer* and an *encoder-decoder attention layer*.
 
-### Conclusion
+##### **What is masking and why we need it?**
+Masking means to hide certain parts of the input embeddings before they are processed by the self-attention module. This pre-processing step is not needed during inference but it's needed during the training phase. Let's understand why. 
 
-[Transformer implementation](https://nlp.seas.harvard.edu/annotated-transformer/#full-model)
+We understood that the Encoder network can process the input embeddings in parallel, but what about the Decoder? During inference (the correct output sequence is not known) the Decoder works in sequential mode, like a RNN:
+- it receives the Encoder's contextualized embeddings
+- it looks at all the previous outputs
+- it predicts the next word, until it generates the `<eos>` token (short for *end of sentence*).
+
+As highligheted from [artoby's post on StackOverflow](https://stackoverflow.com/questions/58127059/how-to-understand-masked-multi-head-attention-in-transformer), during training, since the correct output sequence is known, we could train the Decoder in parallel: we just need to give as input all the correct embeddings but masked appropriately considering the time step. For example, if we want to translate `I love you` to German we could execute in parallel the following Decoder's steps:
+- Input decoding step 0:  `---    -----  ----`
+- Input decoding step 1:  `Ich    -----  ----`
+- Input decoding step 2:  `Ich    liebe  ----`
+
+If we don't mask the input, the Decoder's self-attention module could cheat, attending to subsequent words! By applying masking and shifting the output embeddings by one position, two factors work in conjunction to maintain the auto-regressive nature of the Decoder. Firstly, the masking prevents the predictions for a given position, denoted as $i$, from relying on any future positions beyond $i$. Secondly, the offsetting of the output embeddings guarantees that the predictions at position $i$ only depend on the known outputs at positions preceding $i$.
+
+
+##### **Encoder-Decoder attention**
+The animation in *Figure 15* shows how the decoding stage works. In the *Encoder-Decoder attention* layers, the $Q$ matrix originates from the preceding decoder layer, while the $K$ and $V$ matrices are extracted from the encoder's output. As a result, each position in the decoder has the ability to focus on every position within the input sequence.
+
+| <img src="/assets/2023-06-29-transformers/decoding.gif" alt="transformer decoding step" />| 
+|:--:| 
+| *Figure 15*: The decoding step of the Decoder network. Credits: [Alammar, J (2018). The Illustrated Transformer](https://jalammar.github.io/illustrated-transformer) |
+
+
+
+#### The final head
+
+*Figure 16* shows the two final layers that process the Decoder network's output and predict the next word. The linear layer is a fully connected neural network which size is equal to the size of the vocabolary. The softmax layer assign a probability for each of the possible word predicted by the linear layer. The word with the highest probability is choosen to be the next word in the sentence for the current time step.
+
+| <img src="/assets/2023-06-29-transformers/final_head.jpg" alt="linear and softmax layers" width="200"/>| 
+|:--:| 
+| *Figure 16*: The final layers of the *Transformer* architecture: linear and softmax. Credits: [A. Vaswani, et al. (2017)](https://arxiv.org/pdf/1706.03762.pdf) |
+
+
+# Conclusion
+
+Now, it's time to get your hands dirty! Let the implementation begins 🤓
+
+- [Karpathy's minGPT](https://github.com/karpathy/minGPT) and [nanoGPT](https://github.com/karpathy/nanoGPT)
+- [Harvard's implementation](https://nlp.seas.harvard.edu/annotated-transformer/#full-model) of [A. Vaswani, et al. (2017)](https://arxiv.org/pdf/1706.03762.pdf) 
