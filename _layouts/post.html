@@ -10,7 +10,7 @@ layout: default
         {%- assign date_format = site.minima.date_format | default: "%b %-d, %Y" -%}
         {{ page.date | date: date_format }}
         {% capture time %}{{ content | reading_time }}{% endcapture %}
-        <p>Estimate reading time: {{ time }} {% if time == '1' %}minute{% else %}minutes{% endif %}.</p>
+        <p>Estimate reading time: 15 minutes.{{ time }} {% if time == '1' %}minute{% else %}minutes{% endif %}.</p>
       </time>
       {%- if page.author -%}
         • <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span class="p-author h-card" itemprop="name">{{ page.author }}</span></span>
