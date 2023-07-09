@@ -34,7 +34,7 @@ plugins:
   - jekyll-feed
   - liquid_reading_time
   - jemoji
-  - jekyll-toc
+  #- jekyll-toc
   - jekyll-seo-tag
   - jekyll-coffeescript
   - jekyll-commonmark-ghpages
