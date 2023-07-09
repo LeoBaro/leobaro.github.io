@@ -26,7 +26,7 @@ group :jekyll_plugins do
   gem "jekyll-feed"
   gem "liquid_reading_time"
   gem "jemoji"
-  gem "jekyll-toc"
+  #gem "jekyll-toc"
   gem "jekyll-seo-tag"
   gem "jekyll-coffeescript"
   gem "jekyll-commonmark-ghpages"

@@ -3,7 +3,7 @@ layout: post
 title:  "Yet another transformers post!"
 date:   2023-06-29 14:50:00 +0200
 categories: deep-learning 
-toc: true
+#toc: true
 ---
 <script type="text/x-mathjax-config">
   MathJax.Hub.Config({
@@ -14,6 +14,39 @@ toc: true
   });
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+
+Outline
+=======
+<ul>
+  <li><a href="#introduction">Introduction</a></li>
+  <li><a href="#sequence-to-sequence-modeling">Sequence-to-sequence modeling</a></li>
+  <li><a href="#encoder-decoder-architecture-for-sequences">Encoder-Decoder architecture for sequences</a></li>
+  <li><a href="#limitations">Limitations</a></li>
+  <li><a href="#transformers">Transformers</a>
+    <ul>
+      <li><a href="#attention-and-self-attention">Attention and Self-Attention</a></li>
+      <li><a href="#positional-embeddings">Positional Embeddings</a></li>
+    </ul>
+  </li>
+  <li><a href="#the-transformer-architecture">The Transformer architecture</a>
+    <ul>
+      <li><a href="#the-encoder">The Encoder</a>
+        <ul>
+          <li><a href="#position-wise-feed-forward-network">Position-Wise Feed-Forward Network</a></li>
+          <li><a href="#layer-normalization-and-skip-connections">Layer normalization and Skip connections</a></li>
+        </ul>
+      </li>
+      <li><a href="#the-decoder">The Decoder</a>
+        <ul>
+          <li><a href="#what-is-masking-and-why-do-we-need-it">What is masking, and why do we need it?</a></li>
+          <li><a href="#encoder-decoder-attention">Encoder-Decoder attention</a></li>
+        </ul>
+      </li>
+      <li><a href="#the-final-head">The final head</a></li>
+    </ul>
+  </li>
+  <li><a href="#conclusion">Conclusion</a></li>
+</ul>
 
 Introduction
 ============
