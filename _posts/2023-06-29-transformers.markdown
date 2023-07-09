@@ -15,10 +15,16 @@ categories: deep-learning
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
 
+Introduction
+============
+
+The *Transformer* architecture defined a new standard for modern neural network design, leading to the development of the current state-of-the-art models such as *GPT*, *BERT*, *CLIP* and enabling the training of robust multi-modal architectures. This post assumes a basic understanding of the Auto-Encoder architecture and recurrent models.
+
+<a target="_blank" href="https://www.amazon.it/Natural-Language-Processing-Transformers-Applications/dp/1098136799/ref=sr_1_1?keywords=natural+language+processing+with+transformers&amp;qid=1688565977&amp;sprefix=Natural+lan%252Caps%252C113&amp;sr=8-1&_encoding=UTF8&tag=leobaro-21&linkCode=ur2&linkId=036ca3124da4daab7b40fe2a7c8e21de&camp=3414&creative=21718">🔥🔥🔥 One of the best book on Transformers, NLP and 🤗Hugging Face 🔥🔥🔥</a>
+
 Outline
 =======
 <ul>
-  <li><a href="#introduction">Introduction</a></li>
   <li><a href="#sequence-to-sequence-modeling">Sequence-to-sequence modeling</a></li>
   <li><a href="#encoder-decoder-architecture-for-sequences">Encoder-Decoder architecture for sequences</a></li>
   <li><a href="#limitations">Limitations</a></li>
@@ -47,14 +53,6 @@ Outline
   </li>
   <li><a href="#conclusion">Conclusion</a></li>
 </ul>
-
-Introduction
-============
-
-The *Transformer* architecture defined a new standard for modern neural network design, leading to the development of the current state-of-the-art models such as *GPT*, *BERT*, *CLIP* and enabling the training of robust multi-modal architectures. This post assumes a basic understanding of the Auto-Encoder architecture and recurrent models.
-
-<a target="_blank" href="https://www.amazon.it/Natural-Language-Processing-Transformers-Applications/dp/1098136799/ref=sr_1_1?keywords=natural+language+processing+with+transformers&amp;qid=1688565977&amp;sprefix=Natural+lan%252Caps%252C113&amp;sr=8-1&_encoding=UTF8&tag=leobaro-21&linkCode=ur2&linkId=036ca3124da4daab7b40fe2a7c8e21de&camp=3414&creative=21718">🔥🔥🔥 One of the best book on Transformers, NLP and 🤗Hugging Face 🔥🔥🔥</a>
-
 
 Sequence-to-sequence modeling
 =============================
