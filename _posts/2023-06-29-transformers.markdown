@@ -18,7 +18,7 @@ categories: deep-learning
 Introduction
 ============
 
-The *Transformer* architecture defined a new standard for modern neural network design, leading to the development of the current state-of-the-art models such as *GPT*, *BERT*, *CLIP* and enabling the training of robust multi-modal architectures. This post assumes a basic understanding of the Auto-Encoder architecture and recurrent models.
+The *Transformer* architecture defined a new standard for modern neural network design, leading to the development of the current state-of-the-art models such as *GPT*, *BERT*, *CLIP* and enabling the training of robust multi-modal architectures. This post assumes a basic understanding of the Encoder-Decoder architecture and recurrent models.
 
 <a target="_blank" href="https://www.amazon.it/Natural-Language-Processing-Transformers-Applications/dp/1098136799/ref=sr_1_1?keywords=natural+language+processing+with+transformers&amp;qid=1688565977&amp;sprefix=Natural+lan%252Caps%252C113&amp;sr=8-1&_encoding=UTF8&tag=leobaro-21&linkCode=ur2&linkId=036ca3124da4daab7b40fe2a7c8e21de&camp=3414&creative=21718">🔥🔥🔥 One of the best book on Transformers, NLP and 🤗Hugging Face 🔥🔥🔥</a>
 
@@ -69,7 +69,7 @@ Before Attention and Transformer, Recurrent Neural Networks (RNN) and then Long-
 
 Encoder-Decoder architecture for sequences
 ==========================================
-Neural network Encoder-Decoder architectures are designed to have a hidden layer that acts like a bottleneck, forcing the encoder part to learn how to compress the information. The decoder part of the network starts from this representation to solve a particular task. These kinds of architecture are widely used in several fields, from *Machine Vision* to *Natural Language Processing* (NLP). Both encoder and decoder networks can be implemented with different types of layers regarding the input data type and the representation learning capabilities we want to give to the network. Typically, in *Machine Vision*, the encoder and decoder's layers are convolutional to reduce the number of parameters and to exploit the locality features of an image. If the input is a sequence, recurrent layers give the Auto-Encoder the capability of processing sequences of arbitrary length and exploit temporality. This is the case of NLP, in which sentences are a sequence of words. 
+Neural network Encoder-Decoder architectures are designed to have a hidden layer that acts like a bottleneck, forcing the encoder part to learn how to compress the information. The decoder part of the network starts from this representation to solve a particular task. These kinds of architecture are widely used in several fields, from *Machine Vision* to *Natural Language Processing* (NLP). Both encoder and decoder networks can be implemented with different types of layers regarding the input data type and the representation learning capabilities we want to give to the network. Typically, in *Machine Vision*, the encoder and decoder's layers are convolutional to reduce the number of parameters and to exploit the locality features of an image. If the input is a sequence, recurrent layers give the Encoder-Decoder model the capability of processing sequences of arbitrary length and exploit temporality. This is the case of NLP, in which sentences are a sequence of words. 
 
 But how can we input words represented as strings into a neural network? Before diving into the Encoder-Decoder architecture for sequences, let's understand how to convert text into a more suitable format for neural networks. In a nutshell, each sentence is the input of a *Tokenizer* whose purpose is to apply tokenization and numericalization. Finally, an *Embedder* transforms each token into a vector representation. Let's break these steps down with an example (using the HuggingFace library).
 
@@ -120,13 +120,13 @@ Now we're ready to explore the Encoder-Decoder architecture, introduced by [K. C
 
 | <img src="/assets/2023-06-29-transformers/encoder-decoder.jpg" alt="encoder-decoder" width="800"/>| 
 |:--:|                 
-| *Figure 2*: the diagram shows a simple Autoencoder architecture composed of one recurrent layer for the encoder and one recurrent layer for the decoder. Credits to [towardsdatascience.com](https://towardsdatascience.com/understanding-encoder-decoder-sequence-to-sequence-model-679e04af4346). |
+| *Figure 2*: the diagram shows a simple Encoder-Decoder architecture composed of one recurrent layer for the encoder and one recurrent layer for the decoder. Credits to [towardsdatascience.com](https://towardsdatascience.com/understanding-encoder-decoder-sequence-to-sequence-model-679e04af4346). |
 
 Limitations
 ===========
 As shown by [Bengio, et al. (1994)](https://www.researchgate.net/publication/5583935_Learning_long-term_dependencies_with_gradient_descent_is_difficult) the central issue of this architecture is that RNNs encounter difficulties in learning long-term dependencies. This capability is crucial in NLP, as sentences can be pretty long, and remembering information given at the beginning of the sentence can significantly impact solving, for example, a prediction task. 
 
-A variant of the RNN model, called Long-Short Memory Network (LSTM), introduced by [Hochreiter & Schmidhuber, (1997)](https://www.bioinf.jku.at/publications/older/2604.pdf), was designed for learning long-term dependencies. [Colah's blog post on LSTM](https://colah.github.io/posts/2015-08-Understanding-LSTMs) explains the inner mechanism of LSTM cells. Autoencoders based on LSTM layers set a new standard for sequence-to-sequence learning, as shown in the work of [I. Sutskever, et al. (2014)](https://arxiv.org/abs/1409.3215). 
+A variant of the RNN model, called Long-Short Memory Network (LSTM), introduced by [Hochreiter & Schmidhuber, (1997)](https://www.bioinf.jku.at/publications/older/2604.pdf), was designed for learning long-term dependencies. [Colah's blog post on LSTM](https://colah.github.io/posts/2015-08-Understanding-LSTMs) explains the inner mechanism of LSTM cells. Encoder-Decoder models based on LSTM layers set a new standard for sequence-to-sequence learning, as shown in the work of [I. Sutskever, et al. (2014)](https://arxiv.org/abs/1409.3215). 
 
 Before introducing the *Transformer* architecture, let's highlight the two main limitations of recurrent-based models:
 
