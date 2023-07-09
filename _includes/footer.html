@@ -6,8 +6,11 @@
     <!-- <h2 class="footer-heading">{{ site.title | escape }}</h2> -->
     <div>
       <div>
-            <b>Thank you for reading! For any corrections or feedback, contact me at:</b><br> {{ site.email }}
+        {{- site.description | escape -}}
+        <br>
+        <p class="rss-subscribe">Subscribe <a href="{{ "/feed.xml" | relative_url }}">via RSS </a></p>
       </div>
+
     </div>
     <br>
     <div>

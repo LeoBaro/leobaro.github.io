@@ -19,31 +19,34 @@ Introduction
 ============
 <ul>
 <li>Alert boxes</li>
-<li>Last grammarly (final part)</li>
 <li>Q,V,K explanation</li>
 </ul>
 
-The *Transformer* architecture defined a new standard for modern neural network design, leading to the development of the current state-of-the-art models such as *GPT*, *BERT*, *CLIP* and enabling the training of robust multi-modal architectures. This post assumes a basic understanding of the AutoEncoder architecture and recurrent models.
+The *Transformer* architecture defined a new standard for modern neural network design, leading to the development of the current state-of-the-art models such as *GPT*, *BERT*, *CLIP* and enabling the training of robust multi-modal architectures. This post assumes a basic understanding of the Auto-Encoder architecture and recurrent models.
 
 <a target="_blank" href="https://www.amazon.it/Natural-Language-Processing-Transformers-Applications/dp/1098136799/ref=sr_1_1?keywords=natural+language+processing+with+transformers&amp;qid=1688565977&amp;sprefix=Natural+lan%252Caps%252C113&amp;sr=8-1&_encoding=UTF8&tag=leobaro-21&linkCode=ur2&linkId=036ca3124da4daab7b40fe2a7c8e21de&camp=3414&creative=21718">🔥🔥🔥 One of the best book on Transformers, NLP and 🤗Hugging Face 🔥🔥🔥</a>
+
 
 Sequence-to-sequence modeling
 =============================
 
-One categorization of deep learning models considers the nature of the input and the corresponding output of a neural network architecture. The input or output can be a single vector or a sequence of vectors. Let's give some examples: a single RGB image is represented by a tensor with shape (height, weight, channels), while a single word in a sentence can be defined with a tensor of shape (v) where v is the vocabulary size. Both of these examples are single vectors, not sequences. On the other hand, a video is a sequence of images, and a sentence is a sequence of words. *Figure 1* discriminates all the possible combinations. Let's start from the leftmost panel: it shows a *one-to-one* architecture; a single tensor goes in, and a single tensor comes out. The latter is the case of *Image Classification*, in which a single image is passed to the network to produce a vector of probabilities (one for each class). In the diagram of the second panel, a vector goes in, and a sequence comes out. *Image Captioning* is one task that agrees to this representation of input and output: a single image is given as input, and the model generates a sentence (sequence of words) describing the image. Vice versa, *many-to-one* is a task addressed by generative models which accept a natural language description and generate an image that follows that description. Finally, the *many-to-many* approach is used in Machine Translation where a sentence in a given language is translated to another. The last panel still describes the *many-to -many* scenario, but this time with synched input and output, for example, in Video Classification, in which each frame is associated with a vector of probabilities predicting the frame's label. 
+One categorization of deep learning models considers the nature of the input and the corresponding output of a neural network architecture. The input or output can be a single vector (with $N$ dimensions i.e. *features*) or a sequence of vectors. Let's give some examples: a single RGB image is represented by a tensor with shape $(height, weight, channels)$, while a single word in a sentence can be defined with a tensor of shape $(v)$ where $v$ is the vocabulary size. Both of these examples are not sequences. On the other hand, a video is a sequence of images, and a sentence is a sequence of words. *Figure 1* discriminates all combinations of neural architectures. Let's start from the leftmost panel: it shows a *one-to-one* architecture; a single tensor goes in, and a single tensor comes out. The latter is the case of *Image Classification*, in which a single image is passed to the network to produce a vector of probabilities (one for each class). In the diagram of the second panel, a vector goes in, and a sequence comes out. *Image Captioning* is one task that agrees to this representation of input and output: a single image is given as input, and the model generates a sentence (sequence of words) describing the image. Vice versa, *many-to-one* is a task addressed by generative models which accept a natural language description and generate an image that follows that description. Finally, the *many-to-many* approach is used in *Machine Translation* where a sentence in a given language is translated to another. The last panel still describes the *many-to -many* scenario, but this time with synched input and output, for example, in *Video Classification*, in which each frame is associated with a vector of probabilities predicting the frame's label. 
 
 | ![dl-architectures](/assets/2023-06-29-transformers/dl-architectures.jpg)| 
 |:--:|                 
-| *Figure 1*: from [Andrej Karpathy's blog](https://karpathy.github.io/2015/05/21/rnn-effectiveness/). Each rectangle represent a vector. Red vectors are the input blue vectors are the output and green vectors represent holds the neural network states. |
+| *Figure 1*: Each rectangle represent a vector. Red vectors are the input blue vectors are the output and green vectors represent holds the neural network states. Credits: [Andrej Karpathy's blog](https://karpathy.github.io/2015/05/21/rnn-effectiveness/).|
 
-Let's focus on *many-to-many* models and *machine translation* tasks since the essential building block of the Transformer architecture, the attention mechanism, stemmed from the research in this field. Before Attention and Transformer, Recurrent Neural Networks (RNN) and then Long-Short Memory Networks (LSTM) ([S. Hochreiter, J. Schmidhuber (1997)](https://direct.mit.edu/neco/article-abstract/9/8/1735/6109/Long-Short-Term-Memory?redirectedFrom=fulltext)) were used to build models that achieved the state of the art scores on benchmark datasets. These models were based on the Encoder-Decoder architecture. 
+> :bulb: **Let's focus on *many-to-many* architectures and the *Machine Translation* task since the essential building block of the Transformer architecture, the attention mechanism, stemmed from the research in this field.**
+
+Before Attention and Transformer, Recurrent Neural Networks (RNN) and then Long-Short Memory Networks (LSTM), introduced by [S. Hochreiter, J. Schmidhuber (1997)](https://direct.mit.edu/neco/article-abstract/9/8/1735/6109/Long-Short-Term-Memory?redirectedFrom=fulltext), were used to build models that achieved the state of the art scores on benchmark datasets. These models were based on the Encoder-Decoder architecture. 
 
 Encoder-Decoder architecture for sequences
 ==========================================
-Neural network Encoder-Decoder architectures are designed to have a hidden layer that acts like a bottleneck forcing the encoder part to learn how to compress the information. The decoder part of the network starts from this representation to solve a particular task. These kinds of architecture are widely used in several fields, from Machine Vision to Natural Language Processing. Both encoder and decoder can be implemented with different types of layers regarding the data type and the representation learning capabilities we want to give to the network. Typically, in Machine Vision, the encoder and decoder's layers are convolutional to exploit the locality features of an image. If the input is a sequence, recurrent layers give the Auto-Encoder the capability of processing sequences of arbitrary length and exploit temporality. This is the case of Natural Language Processing, in which sentences are a sequence of words. 
+Neural network Encoder-Decoder architectures are designed to have a hidden layer that acts like a bottleneck, forcing the encoder part to learn how to compress the information. The decoder part of the network starts from this representation to solve a particular task. These kinds of architecture are widely used in several fields, from *Machine Vision* to *Natural Language Processing* (NLP). Both encoder and decoder networks can be implemented with different types of layers regarding the input data type and the representation learning capabilities we want to give to the network. Typically, in *Machine Vision*, the encoder and decoder's layers are convolutional to reduce the number of parameters and to exploit the locality features of an image. If the input is a sequence, recurrent layers give the Auto-Encoder the capability of processing sequences of arbitrary length and exploit temporality. This is the case of NLP, in which sentences are a sequence of words. 
 
-But how can we input words into a neural network? Before diving into the Encoder-Decoder architecture for sequences, let's understand how to convert text into a more suitable format for neural networks. In a nutshell, each sentence is the input of a *Tokenizer* whose purpose is to apply tokenization and numericalization. Finally, an *Embedder* transforms each token into a vector representation. Let's break these steps down with an example (using the HuggingFace library):
+But how can we input words represented as strings into a neural network? Before diving into the Encoder-Decoder architecture for sequences, let's understand how to convert text into a more suitable format for neural networks. In a nutshell, each sentence is the input of a *Tokenizer* whose purpose is to apply tokenization and numericalization. Finally, an *Embedder* transforms each token into a vector representation. Let's break these steps down with an example (using the HuggingFace library).
 
+*Tokenization* is a way of separating a piece of text into smaller units called tokens:
 {% highlight python %}
 from transformers import DistilBertTokenizerFast, DistilBertModel
 
@@ -54,58 +57,55 @@ tokens = tokenizer.encode('Run, rabbit run. Dig that hole, forget the sun.', ret
 print(tokens)
 #=> prints ['[CLS]', 'run', ',', 'rabbit', 'run', '.', 'dig', 'that', 'hole', ',', 'forget', 'the', 'sun', '.', '[SEP]']
 {% endhighlight %}
-*Tokenization* is a way of separating a piece of text into smaller units called tokens. 
 
-
+*Numericalization* converts each unique token to an unique number:
 {% highlight python %}
 decoded_tokens = tokenizer.convert_ids_to_tokens(enc.input_ids)
 print(decoded_tokens)
-#=> prints tensor([[  101,  2448,  1010, 10442,  2448,  1012, 10667,  2008,  4920,  1010, 5293,  1996,  3103,  1012,   102]])
+#=> prints tensor([[101,  2448,  1010, 10442,  2448,  1012, 10667,  2008,  4920,  1010, 5293,  1996,  3103,  1012,   102]])
 {% endhighlight %}
-*Numericalization* converts each unique token to an unique number.
 
-
+Finally, the *Encoding* step converts numbers into vectors:
 {% highlight python %}
 model = DistilBertModel.from_pretrained("distilbert-base-uncased")
 
 print(model.embeddings.word_embeddings(tokens))
 
 #=> prints 
-  tensor([[[ 0.0390, -0.0123, -0.0208,  ...,  0.0607,  0.0230,  0.0238],
-           [ 0.0449, -0.0244, -0.0157,  ..., -0.0461, -0.0771, -0.0006],
-           [-0.0111, -0.0141, -0.0029,  ...,  0.0023,  0.0018,  0.0093],
-           ...,
-           [-0.0097, -0.0020,  0.0337,  ..., -0.0339, -0.0130, -0.0300],
-           [-0.0244, -0.0138, -0.0078,  ...,  0.0069,  0.0057, -0.0016],
-           [-0.0199, -0.0095, -0.0099,  ..., -0.0235,  0.0071, -0.0071]]],
-        grad_fn=<EmbeddingBackward0>)
+#=>  tensor([[[ 0.0390, -0.0123, -0.0208,  ...,  0.0607,  0.0230,  0.0238],
+#=>           [ 0.0449, -0.0244, -0.0157,  ..., -0.0461, -0.0771, -0.0006],
+#=>           [-0.0111, -0.0141, -0.0029,  ...,  0.0023,  0.0018,  0.0093],
+#=>           ...,
+#=>           [-0.0097, -0.0020,  0.0337,  ..., -0.0339, -0.0130, -0.0300],
+#=>           [-0.0244, -0.0138, -0.0078,  ...,  0.0069,  0.0057, -0.0016],
+#=>           [-0.0199, -0.0095, -0.0099,  ..., -0.0235,  0.0071, -0.0071]]],
+#=>       grad_fn=<EmbeddingBackward0>)
 
 print(model.embeddings.word_embeddings(tokens)[0][0].shape)
 #=> prints torch.Size([768])
 
 {% endhighlight %}
-Finally, the *Encoding* step converts numbers into vectors.
 
 The tokenization step is crucial since tokens are the building blocks of NLP. It can be applied to single characters, single words, or subwords. Character tokenization and word tokenization have drawbacks, so nowadays, the most common way to tokenize a sentence is to use subwords tokenization algorithms, such as WordPiece by [M. Schuster, K. Nakajima (2012)](https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/37842.pdf). The subword tokenization is learned from the pretraining corpus with statistical rules and algorithms. If you want to know more, check out [this blog post](https://towardsdatascience.com/tokenization-for-natural-language-processing-a179a891bad4). Finally, an embedding is a real-value representation of a word that encodes the semantics and syntactic of the word so that words closer in the vector space are expected to be similar in meaning. The *word2vec* algorithm uses a neural network model to learn word associations from a large corpus of text, as shown by [T. Mikolov et al. (2013)](https://arxiv.org/pdf/1301.3781.pdf). If you want to know more, check out [this blog post](https://towardsdatascience.com/word2vec-research-paper-explained-205cb7eecc30).
 
 
 
-Now we're ready to explore the Encoder-Decoder architecture for machine translation (introduced by [K. Cho, et al. (2014)](https://arxiv.org/abs/1406.1078)), shown in *Figure 2*. This Encoder-Decoder architecture comprises one recurrent layer for the encoder and one for the decoder. Each RNN layer is, in reality, composed of a solitary rolled RNN cell that unrolls following the number of time steps. [This article](https://towardsdatascience.com/all-you-need-to-know-about-rnns-e514f0b00c7c) explains well how the RNN layer processes an input sequence. At each time step, the encoder RNN cell gets a new sequence element and the internal state computed in the previous time step (the initial hidden state is typically a vector of zeros) and outputs a new component for the output sequence and the updated internal state. We are interested in the internal state of the last time step, obtained with the processing of input $x_3$. This fixed-length *encoder vector*, as shown in *Figure 2*, encodes all the information of the input sequence. The vector is then used to initialize the decoder network's internal state, which uses its outputs to unroll and give the final output sequence $y_1$, $y_2$. 
+Now we're ready to explore the Encoder-Decoder architecture, introduced by [K. Cho, et al. (2014)](https://arxiv.org/abs/1406.1078), to translate a sentence in another language. The Encoder-Decoder architecture comprises one recurrent layer for the encoder and one for the decoder (*Figure 2*). Each RNN layer is, in reality, composed of a solitary rolled RNN cell that unrolls following the number of time steps. [This article](https://towardsdatascience.com/all-you-need-to-know-about-rnns-e514f0b00c7c) explains well how the RNN layer processes an input sequence. In a nutshell, at each time step the encoder RNN cell gets a new sequence element and the internal state computed in the previous time step (the initial hidden state is typically a vector of zeros) and outputs a new component for the output sequence and the updated internal state. We are interested in the internal state of the last time step, obtained with the processing of input $x_3$. This fixed-length *encoder vector* encodes all the information of the input sequence. The vector is then used to initialize the decoder network's internal state, which uses its outputs to unroll and give the final output sequence $y_1$, $y_2$. 
 
 
-| <img src="/assets/2023-06-29-transformers/encoder-decoder.jpg" alt="encoder-decoder" width="500"/>| 
+| <img src="/assets/2023-06-29-transformers/encoder-decoder.jpg" alt="encoder-decoder" width="800"/>| 
 |:--:|                 
 | *Figure 2*: the diagram shows a simple Autoencoder architecture composed of one recurrent layer for the encoder and one recurrent layer for the decoder. Credits to [towardsdatascience.com](https://towardsdatascience.com/understanding-encoder-decoder-sequence-to-sequence-model-679e04af4346). |
 
 Limitations
 ===========
-As shown by [Bengio, et al. (1994)](https://www.researchgate.net/publication/5583935_Learning_long-term_dependencies_with_gradient_descent_is_difficult) the central issue of this architecture is that RNNs encounter difficulties in learning to establish long-term dependencies. This capability is crucial in NLP, as sentences can be pretty long, and remembering information given at the beginning of the sentence can significantly impact solving, for example, a prediction task. 
+As shown by [Bengio, et al. (1994)](https://www.researchgate.net/publication/5583935_Learning_long-term_dependencies_with_gradient_descent_is_difficult) the central issue of this architecture is that RNNs encounter difficulties in learning long-term dependencies. This capability is crucial in NLP, as sentences can be pretty long, and remembering information given at the beginning of the sentence can significantly impact solving, for example, a prediction task. 
 
-A variant of the RNN model, called Long-Short Memory Network (LSTM), was introduced by [Hochreiter & Schmidhuber ([1997)](https://www.bioinf.jku.at/publications/older/2604.pdf), and it was designed for learning long-term dependencies. [Colah's blog post on LSTM](https://colah.github.io/posts/2015-08-Understanding-LSTMs) explains the inner mechanism of LSTM cells. Autoencoders based on LSTM layers set a new standard for sequence-to-sequence learning, as shown in the work of [I. Sutskever, et al. (2014)](https://arxiv.org/abs/1409.3215). 
+A variant of the RNN model, called Long-Short Memory Network (LSTM), introduced by [Hochreiter & Schmidhuber, (1997)](https://www.bioinf.jku.at/publications/older/2604.pdf), was designed for learning long-term dependencies. [Colah's blog post on LSTM](https://colah.github.io/posts/2015-08-Understanding-LSTMs) explains the inner mechanism of LSTM cells. Autoencoders based on LSTM layers set a new standard for sequence-to-sequence learning, as shown in the work of [I. Sutskever, et al. (2014)](https://arxiv.org/abs/1409.3215). 
 
-Before introducing the Transformer architecture, let's highlight the two main limitations of recurrent-based models:
+Before introducing the *Transformer* architecture, let's highlight the two main limitations of recurrent-based models:
 
-1. Although LSTMs mitigated the problem of learning long-term dependencies, they have not entirely addressed it. For very long sequences, they still struggle. This problem is inherently related to the recursion nature of the architecture: information in RNNs and LSTMs is retained thanks to previously computed hidden states, but they are updated at each time step, decreasing the influence of past words. Furthermore, in the Encoder-Decoder architecture, only the last hidden state is passed to the decoder network, and researchers realized that this fixed-length vector was a bottleneck for these models. 
+1. Although LSTMs mitigated the problem of learning long-term dependencies, they have not entirely addressed it. For very long sequences, they still struggle. This problem is inherently related to the recursion nature of the architecture: information in RNNs and LSTMs is retained thanks to previously computed hidden states, but they are updated at each time step, decreasing the influence of past words. Furthermore, in Encoder-Decoder architectures, only the last hidden state is passed to the decoder network, and researchers realized that this fixed-length vector was a bottleneck for these models. 
 2. In recurrent models, the processing of the input sequences is sequential and can not be parallelized. Hence, LSTMs can't be trained in parallel.  
 
 Transformers
@@ -252,33 +252,32 @@ As we can see from *Figure 11* the skip connections and the layer normalization 
 
 #### The Decoder
 
-We're really close to the end of this journey! We just need to introduce the Decoder network, but actually it reuses almost the same components we talked about. 
+We're close to the end of this journey! We need to introduce the Decoder network, but it reuses almost the same components we discussed. 
 
 | <img src="/assets/2023-06-29-transformers/decoder.jpg" alt="decoder" width="200"/>| 
 |:--:| 
 | *Figure 14*: Decoder network. Credits: [A. Vaswani, et al. (2017)](https://arxiv.org/pdf/1706.03762.pdf) |
 
+The objective of the Decoder network is to predict the next word in a sentence given the words it has already predicted and the contextualized embedding from each Encoder layer. The Decoder is also composed of a stack of $N=6$ identical layers. The main difference from the Encoder network is the presence of two slightly different attention layers: a *masked multi-head self-attention layer* and an *encoder-decoder attention layer*.
 
-The objective of the Decoder network is to predict the next word in a sentence given the words it has already predicted, and the contextualized embedding from each Encoder layer. The decoder is also composed of a stack of $N=6$ identical layers. The main differences from the Encoder network is that the Decoder has two slightly different attention layers: a *masked multi-head self-attention layer* and an *encoder-decoder attention layer*.
-
-##### **What is masking and why we need it?**
-Masking means to hide certain parts of the input embeddings before they are processed by the self-attention module. This pre-processing step is not needed during inference but it's needed during the training phase. Let's understand why. 
+##### **What is masking, and why do we need it?**
+Masking means hiding certain parts of the input embeddings before the self-attention module processes them. This pre-processing step is not needed during inference, but it's needed during the training phase. Let's understand why. 
 
 We understood that the Encoder network can process the input embeddings in parallel, but what about the Decoder? During inference (the correct output sequence is not known) the Decoder works in sequential mode, like a RNN:
 - it receives the Encoder's contextualized embeddings
 - it looks at all the previous outputs
-- it predicts the next word, until it generates the `<eos>` token (short for *end of sentence*).
+- it predicts the next word until it generates the `<eos>` token (short for *end of sentence*).
 
-As highligheted from [artoby's post on StackOverflow](https://stackoverflow.com/questions/58127059/how-to-understand-masked-multi-head-attention-in-transformer), during training, since the correct output sequence is known, we could train the Decoder in parallel: we just need to give as input all the correct embeddings but masked appropriately considering the time step. For example, if we want to translate `I love you` to German we could execute in parallel the following Decoder's steps:
+As highlighted from [artoby's post on StackOverflow](https://stackoverflow.com/questions/58127059/how-to-understand-masked-multi-head-attention-in-transformer), during training, since the correct output sequence is known, we could train the Decoder in parallel: we just need to give as input all the correct embeddings but masked appropriately considering the time step. For example, if we want to translate `I love you` to German, we could execute in parallel the following Decoder's steps:
 - Input decoding step 0:  `---    -----  ----`
 - Input decoding step 1:  `Ich    -----  ----`
 - Input decoding step 2:  `Ich    liebe  ----`
 
-If we don't mask the input, the Decoder's self-attention module could cheat, attending to subsequent words! By applying masking and shifting the output embeddings by one position, two factors work in conjunction to maintain the auto-regressive nature of the Decoder. Firstly, the masking prevents the predictions for a given position, denoted as $i$, from relying on any future positions beyond $i$. Secondly, the offsetting of the output embeddings guarantees that the predictions at position $i$ only depend on the known outputs at positions preceding $i$.
+If we don't mask the input, the Decoder's self-attention module could cheat, attending to subsequent words! By masking and shifting the output embeddings by one position, two factors work in conjunction to maintain the auto-regressive nature of the Decoder. Firstly, the masking prevents the predictions for a given position, denoted as $i$, from relying on any future positions beyond $i$. Secondly, offsetting the output embeddings guarantees that the predictions at position $i$ only depend on the known outputs at positions preceding $i$.
 
 
 ##### **Encoder-Decoder attention**
-The animation in *Figure 15* shows how the decoding stage works. In the *Encoder-Decoder attention* layers, the $Q$ matrix originates from the preceding decoder layer, while the $K$ and $V$ matrices are extracted from the encoder's output. As a result, each position in the decoder has the ability to focus on every position within the input sequence.
+The animation in *Figure 15* shows how the decoding stage works. In the *Encoder-Decoder attention* layers, the $Q$ matrix originates from the preceding decoder layer, while the $K$ and $V$ matrices are extracted from the Encoder's output. As a result, each position in the Decoder can focus on every position within the input sequence.
 
 | <img src="/assets/2023-06-29-transformers/decoding.gif" alt="transformer decoding step" />| 
 |:--:| 
@@ -288,7 +287,7 @@ The animation in *Figure 15* shows how the decoding stage works. In the *Encoder
 
 #### The final head
 
-*Figure 16* shows the two final layers that process the Decoder network's output and predict the next word. The linear layer is a fully connected neural network which size is equal to the size of the vocabolary. The softmax layer assign a probability for each of the possible word predicted by the linear layer. The word with the highest probability is choosen to be the next word in the sentence for the current time step.
+*Figure 16* shows the two final layers that process the Decoder network's output and predict the next word. The linear layer is a fully connected neural network whose size equals vocabulary size. The softmax layer assigns a probability for each possible word predicted by the linear layer. The word with the highest probability is chosen to be the following word in the sentence for the current time step.
 
 | <img src="/assets/2023-06-29-transformers/final_head.jpg" alt="linear and softmax layers" width="200"/>| 
 |:--:| 
