@@ -17,10 +17,6 @@ toc: true
 
 Introduction
 ============
-<ul>
-<li>Alert boxes</li>
-<li>Q,V,K explanation</li>
-</ul>
 
 The *Transformer* architecture defined a new standard for modern neural network design, leading to the development of the current state-of-the-art models such as *GPT*, *BERT*, *CLIP* and enabling the training of robust multi-modal architectures. This post assumes a basic understanding of the Auto-Encoder architecture and recurrent models.
 
@@ -87,8 +83,6 @@ print(model.embeddings.word_embeddings(tokens)[0][0].shape)
 {% endhighlight %}
 
 The tokenization step is crucial since tokens are the building blocks of NLP. It can be applied to single characters, single words, or subwords. Character tokenization and word tokenization have drawbacks, so nowadays, the most common way to tokenize a sentence is to use subwords tokenization algorithms, such as WordPiece by [M. Schuster, K. Nakajima (2012)](https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/37842.pdf). The subword tokenization is learned from the pretraining corpus with statistical rules and algorithms. If you want to know more, check out [this blog post](https://towardsdatascience.com/tokenization-for-natural-language-processing-a179a891bad4). Finally, an embedding is a real-value representation of a word that encodes the semantics and syntactic of the word so that words closer in the vector space are expected to be similar in meaning. The *word2vec* algorithm uses a neural network model to learn word associations from a large corpus of text, as shown by [T. Mikolov et al. (2013)](https://arxiv.org/pdf/1301.3781.pdf). If you want to know more, check out [this blog post](https://towardsdatascience.com/word2vec-research-paper-explained-205cb7eecc30).
-
-
 
 Now we're ready to explore the Encoder-Decoder architecture, introduced by [K. Cho, et al. (2014)](https://arxiv.org/abs/1406.1078), to translate a sentence in another language. The Encoder-Decoder architecture comprises one recurrent layer for the encoder and one for the decoder (*Figure 2*). Each RNN layer is, in reality, composed of a solitary rolled RNN cell that unrolls following the number of time steps. [This article](https://towardsdatascience.com/all-you-need-to-know-about-rnns-e514f0b00c7c) explains well how the RNN layer processes an input sequence. In a nutshell, at each time step the encoder RNN cell gets a new sequence element and the internal state computed in the previous time step (the initial hidden state is typically a vector of zeros) and outputs a new component for the output sequence and the updated internal state. We are interested in the internal state of the last time step, obtained with the processing of input $x_3$. This fixed-length *encoder vector* encodes all the information of the input sequence. The vector is then used to initialize the decoder network's internal state, which uses its outputs to unroll and give the final output sequence $y_1$, $y_2$. 
 
@@ -169,6 +163,7 @@ Let's break it down:
 |:--:|                 
 | *Figure 6*: The attention weights for the word *watch*. Generated with: [Bertviz](https://github.com/jessevig/bertviz). |
 
+A way to explain the Key/Value/Query mechanism is to think about retrieval systems. When you search for videos on Youtube for example, $Q$ is the text in the search bar and $K$ represent the metadata for every candidate video (title, description, tags and so on). The search engine will compute the similarity between $Q$ and $K$ and give you $V$, i.e. the list of the best matched videos.
 
 **Excellent!** Now we understand how to build a *self-attention* module. But something has not been explained yet. It has been said that the linear layers project the input embeddings into three different spaces. The dimension of these spaces is computed as $head\\_dim=embed\\_dim/att\\_heads\\_num$. The variable $att\\_heads\\_num$ represents the number of *self-attention* heads. It turned out to be beneficial to have multiple *self-attention* heads. 
 > :bulb: **Having multiple self-attention heads enables the model to concentrate simultaneously on different aspects.**
