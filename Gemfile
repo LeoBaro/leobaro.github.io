@@ -24,13 +24,13 @@ gem "minima"
 # If you have any plugins, put them here!
 group :jekyll_plugins do
   gem "jekyll-feed"
-  gem "liquid_reading_time"
+  #gem "liquid_reading_time"
   gem "jemoji"
   #gem "jekyll-toc"
-  gem "jekyll-seo-tag"
-  gem "jekyll-coffeescript"
-  gem "jekyll-commonmark-ghpages"
-  gem "jekyll-gist"
+  #gem "jekyll-seo-tag"
+  #gem "jekyll-coffeescript"
+  #gem "jekyll-commonmark-ghpages"
+  #gem "jekyll-gist"
 end
 
 # Windows and JRuby does not include zoneinfo files, so bundle the tzinfo-data gem
