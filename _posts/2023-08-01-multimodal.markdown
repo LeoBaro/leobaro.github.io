@@ -69,7 +69,7 @@ Regarding on how the response change we can distinguish several types of interac
 |:--:|                 
 | *Figure 3*: non-redundant interactions.|
 
-*Figure 3* shows a disagreement between the modalities. We have **dominance** if one modality response takes over the other (e.g. the multimodal response is "*yes*".). We have **independence** if the responses do not interact. **Modulation** is when one modality response enhance or reduce the other one. Finally, the best scenario is when the **emergence** property give birth to new information.   
+*Figure 3* shows a disagreement between the modalities. We have **dominance** if one modality response takes over the other (e.g. the multimodal response is "*yes*".). We have **independence** if the responses do not interact. **Modulation** is when one modality response enhance or reduce the other one. Finally, the best scenario is when the **emergence** property give birth to new information. These property can overlap: typically, a dominant modality is also modulated by another non-dominant modality.
 
 
 
@@ -82,39 +82,156 @@ The core technical challenges of multimodal machine learning are summarized in *
 |:--:|                 
 | *Figure 4*: Representation and Alignment are at the core of every multimodal problem and they are mandatory to perform Reasoning. Reasoning can give the final answer or maybe we could be interested in learning Generation or Transference. Finally, we want Quantification to understand and improve the multimodal models. Credits to [P. Liang, et al. (2023)](https://arxiv.org/abs/2209.03430). |
 
-#### Representation
-The first challenge is the building block for most multimodul problem: learning a multimodal **representation** that reflect cross-modal interactions between individual elements across different modalities. There are three main approaches (and sub-challenges) for generating a representation for multimodal data: 
-* **Fusion** sub-challenge: information from multiple modalities is integrated to reduce the number of separate representations.
-* **Coordination** sub-challenge: the number of representations is equal to the number of modalities but the representations are contextualized in order to incorporate information from multiple modalities.
-* **Fission** sub-challenge: the number of representations is greater then the number of modalities and they reflect knowledge about internal multimodal structure. 
+## Representation
+The first challenge is the building block for most multimodul problem: learning a multimodal **representation** that reflect cross-modal interactions between individual elements across different modalities. There are three main approaches (and sub-challenges) for generating a representation for multimodal data, as shown in Fig. 5.
 
-#### Alignment
+| ![multimodal representations](/assets/2023-08-01-multimodal/representations.jpg)| 
+|:--:|                 
+| *Figure 5*:  |
+
+### Fusion
+Information from multiple modalities is integrated to reduce the number of separate representations. Most research approches fuse homogeneous modalities (same structure) while fusion with raw and etherogeneous modalities is still an active reaserch topic. One common trick to make modalities homogeneous is to use an unimodal Encoder, as shown in Fig. 6. 
+
+| ![Unimodal Encoders](/assets/2023-08-01-multimodal/fusion_naive.jpg)| 
+|:--:|                 
+| *Figure 6*: unimodal Encoders can be used to obtain homogeneous modalities to ease the fusion process. They can be jointly learned with fusion network or pretrained. |
+
+ Two early approach of fusion were to concatenate the vectors of the X modalities and then make a prediction or predict X results independetly (one for each modality) and then fusion the predictions using majority votes or a model. With representation learning these approaches have been deprecated in favor of more smart fusion techniques.   
+
+ The linear regression model is an example of fusion mechanism. Let's say we have two modalities A and B, and two samples $x_A$ and $x_B$:
+
+ $$z=w_0 + w_1x_A + w_2x_B + w_3(x_A\times x_B)+\epsilon$$
+
+The multiplicative term models the interaction between $x_A$ and $x_B$, while $\epsilon$ represents the error residual, that captures everything that it's not possible to model using the additive and (first order) multiplicative terms. Let's give an example:
+
+* $z$: Final exam scores of students in a course.
+* $x_A$: Number of hours spent studying.
+* $x_B$: Participation in group study sessions.
+
+The model could examine how individual study hours and group study interactions impact exam performance.
+
+The next paragraphs will explain the following fusion techniques:
+| ![fusion tehcniques](/assets/2023-08-01-multimodal/fusions.jpg)| 
+
+#### Additive, Multiplicative and Tensor Fusion
+
+Taking the previous idea we can define some ways of fusing multivariate samples. 
+
+| ![additive fusion](/assets/2023-08-01-multimodal/additive_fusion.jpg)| 
+|:--:|                 
+| *Figure 7*: Additive fusion $z=w_1x_A + w_2x_B$|
+
+| ![multiplicative fusion](/assets/2023-08-01-multimodal/multiplication_fusion.jpg)| 
+|:--:|                 
+| *Figure 8*: Multiplicative fusion $z=w(x_A \times x_B)$|
+
+Additive and multiplicative fusion can be used only when each dimension of the first modality is aligned (have a meaningful equivalence) to the corresponding dimension of the second modality. Let's say $x_A$ was obtained using word2vec, while $x_B$ was obtained using a CNN, seperately. Since these two models were trained indipendently there's no mapping between the first dimension of $x_A$ and the first dimension of $x_B$. 
+
+If we don't want to fine-tune the models to produce a coordinated space, a workaround is to use the bilinear fusion.
+| ![bilinear fusion](/assets/2023-08-01-multimodal/bilinear_fusion.jpg)| 
+|:--:|                 
+| *Figure 9*: Bilinear fusion $z=w(x_A^T \times x_B)$|
+
+The output is a combination of each dimension, modeling all possible interactions. An extension to that is called Tensor Fusion by [Zadeh et al., 2017](https://arxiv.org/abs/1707.07250) that models both unimodal (additive) and bimodal (multiplicative) interactions.
+
+
+| ![tensor fusion](/assets/2023-08-01-multimodal/bilinear_fusion_trick.jpg)| 
+|:--:|                 
+| *Figure 10*: Tensor fusion $z=w([x_A\;1]^T \cdot [x_B\;1])$|
+
+#### Low-rank decomposition
+
+The previous techiniques are also extendible to $\mathbb{R}^n$ but it becomes quite computational intensive especially if more than two modalities are involved. Luckily, [Liu et al., 2018](https://arxiv.org/abs/1806.00064) found a way to decompose the computation into an equivalent low-rank representation, drastically increasing the efficiency.  
+
+#### High-Order Polynomial Fusion
+
+The previous decomposition makes also feasible to increase the order of the interaction polynomial. Until now we limited ourselves to second-order bimodal terms such as $w(x_A\times x_B)$, which fails to unleash the complete expressive power of multilinear fusion with restricted orders of interactions. [Hou et al., 2019](https://proceedings.neurips.cc/paper_files/paper/2019/hash/f56d8183992b6c54c92c16a8519a6e2b-Abstract.html) show a procedure to create a P-order tensor product for integrating multimodal features by considering high-order moments, shown in Fig. 11. In this way, we can introduce interactions of type $w(x_A^2\times x_B^2)$ or $w(x_A^5\times x_B)$ and so on. 
+
+| ![polynomial tensor pooling](/assets/2023-08-01-multimodal/polynomial_tensor_pooling.png)| 
+|:--:|                 
+| *Figure 11*: The scheme of 5-order polynomial tensor pooling block for fusing $z_1$ and $z_2$. Credits to [Hou et al., 2019](https://proceedings.neurips.cc/paper_files/paper/2019/hash/f56d8183992b6c54c92c16a8519a6e2b-Abstract.html)|
+
+
+#### Gated Fusion
+
+Gated fusion follows a different approach. *Gating* is a term that means *"do not propagate unwanted signals"* or, in a positive fashion, *"select preferable signals to move forward"*. Hence, we understand that *Gating* and *Attention* want to achieve the same goal. Gated fusion works as follows:
+* a gate function $g_A(x_A, x_B)$ produces a vector of weights $v_A$. 
+* a gate function $g_B(x_A, x_B)$ produces a vector of weights $v_B$. 
+* the input modalities are multiplied by the vectors of weights and then fused together (using for example additive fusion): 
+  $$z=g_A(x_A, x_B)*x_A + g_B(x_A, x_B)*x_B$$
+
+This is really similar to *Attention*, and the output of $g_A$ and $g_B$ can be seen as attention scores. [Arevalo et al., 2017](https://arxiv.org/abs/1702.01992) shows the internal mechanism of the gate unit.
+
+#### Modality-Shifting Fusion
+
+The gate mechanism can be employed in different ways. For example, let's say we have three modalities but only the first modality is the primary one (containing most of the signal). The other two modalities can be integrated to perform more robust predictions. Citing [Wang et al. (2018)](https://arxiv.org/abs/1811.09362):
+
+> "*Humans convey their intentions through the usage of both verbal and nonverbal behaviors during face-to-face communication. Speaker intentions often vary dynamically depending on different nonverbal contexts, such as vocal patterns and facial expressions. As a result, when modeling human language, it is essential to not only consider the literal meaning of the words but also the nonverbal contexts in which these words appear"* 
+
+In Wang's work, the primary modality is the written language while video and audio can help the model to disambiguate the semantics of the words. This process is shown in Fig. 12: a Gated Modality-mixing Network module integrate acustic and visual data in a *nonverbal* shift vector. This integration is done with an Attention Gate as a weighted average over the visual and acoustic embedding based on the original word embedding. Then, the multimodal-shifted word representation is generated by integrating the nonverbal shift vector to the original word embedding. 
+
+| ![recurrent attended variation embedding network wang 2018](/assets/2023-08-01-multimodal/wang_2018.jpg)| 
+|:--:|                 
+| *Figure 12*: the Recurrent Attended Variation Embedding Network (RAVEN). The modality shifting can be seen as a modulation interaction: the secondary modalities modulates the primary one. Credits to [Wang et al. (2018)](https://arxiv.org/abs/1811.09362)|
+
+The same approach has been used by [Rahman et al., 2020](https://arxiv.org/abs/1908.05787) to create a Multimodal Adaptation Gate (MAG) to allow BERT and XLNet to accept multimodal nonververbal data during fine-tuning. The MAG generates a shift to internal representation of BERT and XLNet, conditioned on the visual and acoustic modalities. 
+
+#### Dynamic Fusion
+Even if the previous technique works well, they are applicable in specific domains. [Xu et al. (2021)](https://arxiv.org/abs/2102.02340) proposed a fusion technique to applicable when the multimodal data is very heterogeneous, such as electronic health records data, that *"contains a mixture of structured (codes) and unstructured (free-text) data with sparse and irregular longitudinal features – all of which doctors utilize when making decisions"*. Actually, they don't propose a particular architecture but a neural architecture search method called *MUltimodal Fusion Architecture SeArch* (MUFASA) to *"simultaneously search across multimodal fusion strategies and modality-specific architectures"*.
+
+#### Nonlinear Fusion
+Nonlinear fusion adopts a nonlinear model to perform the fusion after the concatenation of the modalities. This can be seen as an early fusion approach (Fig. 13) with:
+
+$y=f(x_A,x_B)\in \mathbb{R}^d$ 
+
+where $f$ could be a multi-layer perceptron or any nonlinear model.
+
+| ![early and late fusion](/assets/2023-08-01-multimodal/early_vs_late_fusion.jpg)| 
+|:--:|                 
+| *Figure 13*: Early fusion concatenates original or extracted features at the input level. Late fusion aggregates predictions at the decision level. Credits to: [Huang et al. (2020)](https://www.nature.com/articles/s41746-020-00341-z)|
+
+This kind of fusion is powerful but lacks interpretability. How can we be sure that cross-modal interactions are learnt by the model? Hessel and Lee (2020)(https://arxiv.org/abs/2010.06572) showed that *"sometimes high-performing black-box algorithms turn out to be mostly exploiting unimodal signals in the data"* i.e. the black-box model is equivalent to two unimodal encoders and an additive fusion:
+
+$y=f_A(x_A) + f_B(x_B)$ 
+
+The authors created a diagnostic tool called *Empirical Multimodally-Additive function Projection* (EMAP), for isolating whether or not cross-modal interactions improve performance for a given model on a given task. They found that, in many cases for seven image+text classification tasks, removing cross-modal interactions results in little to no performance degradation. 
+
+
+### Coordination
+The number of representations is equal to the number of modalities but the representations are contextualized in order to incorporate information from multiple modalities.
+* **Fission** sub-challenge: the number of representations is greater then the number of modalities. Modalities can interact with each other in more than one way. Let's think about language and vision. A word can have different types interactions: it can directly correspond to a name of an object or it can have a different type of relation with that object (e.g. parent, use by, ..). Fission want to model all these types of relationships with different representations. 
+
+
+
+
+## Alignment
 The goal of alignment is to identify cross-modal connections between the elements of multiple modalities. Let's think about a video of a person giving a public speak. There're connections between the gestures and the spoken words. In this context, we need to take into account also the structure of the modalities: spatial, sequential, hiererachical, and so on. There are three sub-challenges here:
 * **Discrete Alignment** sub-challenge: it's the problem of finding connections between discrete elements. This can be *local* (find connections between two elements) or *global* (find which elements can be connected by which connections). 
 * **Continuos Alignment** sub-challenge: in this case the modalities elements are not discretized a priori such as timeseries (price of a stock over time) or spatio-temporal data (weather images). 
 * **Contextualized Representation** sub-challenge: its goal is to detect all modality connections and interactions to learn better representation.
 
-#### Reasoning
+## Reasoning
 The goal of reasoning is to exploit multimodal alignment to perform inference. TODO  
 
-#### Generation
+## Generation
 The goal of this challenge is to be able to learn a generative process to produce raw modalities that reflect cross-modal interactions, structure and coherence. The sub-challenges in this context are the following:
 * **Summarization** sub-challenge: generate for each modality a summarization that captures the most relevant information.
 * **Translation** sub-challenge: transform one modality to another while preserving the information.
 * **Creation** sub-challenge: generate novel data of multiple modalities starting from a small set of initial examples or latent conditional variables.
 
-#### Transference
+## Transference
 This is the ability of transfer knowledge from one modality to assist another weak modality (lack of annotated data, presence of noise). There're three sub-challenges:
 * **Cross-modal transfer** sub-challenge: the idea here is to extend the concept unimodal transfer learning to multiple modalities. This means to train a model on one modality and then fine-tune or condition it to another modality. 
 * **Co-learning** sub-challenge: the transfer of information in co-learning is done in two main ways. The first one is done by learning a joint and coordinated representation space using both modalities as input (the second modality is only available during training) and check how the model perform on the first modality during testing. Also the second strategy is based on a joint representation space between two modalities but in this case the model learns a generative process to translate the first modality into the second during inference. 
 * **Model induction** sub-challenge: here the models are trained separately one their modality, but then, their predictions are used to psuedo-label new examples that enrich the training sets of the other.
 
-#### Quantification
+## Quantification
 Quantification aims to address empirical and theoretical studies to improve the robustness, interpretability and reliability of multimodal models. The quantification process in divided into three sub-challenges:
 * **Heterogeneity** sub-challenge: understand which modality contributes most to the learning process, characterize biases and noise for each modality.
 * **Cross-modal interconnections** sub-challenge: understanding and visualize the multimodal connections (how the modalities are related, what they share?) and  the interactions (how the modalities interact during inference?).
 * **Learning process** sub-challenge: the main topics are understanding the generalization capabilities across modalities and tasks, optimizations for efficient training and trade-offs study between performance, robustness and complexity.
 
+:   
 
 
 Additional resources
