@@ -1,0 +1,79 @@
+
+#### Modality-level fission
+
+| ![modality-level fission](/assets/2023-08-01-multimodal/modality_level_fission.jpg)| 
+|:--:|                 
+| *Figure 22*: Modality-level fission. Credits to: [CMU Multimodal Machine Learning course, Fall 2022](https://www.youtube.com/watch?v=65xxHVyHKi0&list=PL-Fhd_vrvisNM7pbbevXKAbT_Xmub37fA&index=9&t=905s) |
+
+[Tsai et al. 2018](https://arxiv.org/abs/1806.06176)
+
+## Alignment
+The goal of alignment is to identify cross-modal connections between the elements of multiple modalities. Let's think about a video of a person giving a public speak. There're connections between the gestures and the spoken words. In this context, we need to take into account also the structure of the modalities: spatial, sequential, hiererachical, and so on. There are three sub-challenges here:
+* **Discrete Alignment** sub-challenge: it's the problem of finding connections between discrete elements. This can be *local* (find connections between two elements) or *global* (find which elements can be connected by which connections). 
+* **Continuos Alignment** sub-challenge: in this case the modalities elements are not discretized a priori such as timeseries (price of a stock over time) or spatio-temporal data (weather images). 
+* **Contextualized Representation** sub-challenge: its goal is to detect all modality connections and interactions to learn better representation.
+
+## Reasoning
+The goal of reasoning is to exploit multimodal alignment to perform inference.   
+
+## Generation
+The goal of this challenge is to be able to learn a generative process to produce raw modalities that reflect cross-modal interactions, structure and coherence. The sub-challenges in this context are the following:
+* **Summarization** sub-challenge: generate for each modality a summarization that captures the most relevant information.
+* **Translation** sub-challenge: transform one modality to another while preserving the information.
+* **Creation** sub-challenge: generate novel data of multiple modalities starting from a small set of initial examples or latent conditional variables.
+
+## Transference
+This is the ability of transfer knowledge from one modality to assist another weak modality (lack of annotated data, presence of noise). There're three sub-challenges:
+* **Cross-modal transfer** sub-challenge: the idea here is to extend the concept unimodal transfer learning to multiple modalities. This means to train a model on one modality and then fine-tune or condition it to another modality. 
+* **Co-learning** sub-challenge: the transfer of information in co-learning is done in two main ways. The first one is done by learning a joint and coordinated representation space using both modalities as input (the second modality is only available during training) and check how the model perform on the first modality during testing. Also the second strategy is based on a joint representation space between two modalities but in this case the model learns a generative process to translate the first modality into the second during inference. 
+* **Model induction** sub-challenge: here the models are trained separately one their modality, but then, their predictions are used to psuedo-label new examples that enrich the training sets of the other.
+
+## Quantification
+Quantification aims to address empirical and theoretical studies to improve the robustness, interpretability and reliability of multimodal models. The quantification process in divided into three sub-challenges:
+* **Heterogeneity** sub-challenge: understand which modality contributes most to the learning process, characterize biases and noise for each modality.
+* **Cross-modal interconnections** sub-challenge: understanding and visualize the multimodal connections (how the modalities are related, what they share?) and  the interactions (how the modalities interact during inference?).
+* **Learning process** sub-challenge: the main topics are understanding the generalization capabilities across modalities and tasks, optimizations for efficient training and trade-offs study between performance, robustness and complexity.
+
+:   
+
+
+Additional resources
+====================
+
+#### Links 
+*  [Paul Liang's reading list](https://github.com/pliang279/awesome-multimodal-ml#applications-and-datasets)
+
+
+
+#### Multimodal Datasets
+
+Affect recognition:
+* AVEC
+* MOSEI
+* Social-IQ
+* MELD
+
+Multimodal QA:
+* TVQA
+* WebQA
+* VisualQA
+
+Media description:
+* MSCOCO 
+* NLVR / NLVR2
+
+Navigation
+* Room-2-Room / Room-Across-Room
+* Winoground
+
+Dialog
+* ...
+  
+Event recognition
+* EPIC-Kitchens
+
+Information retrieval
+* IKEA
+
+More datasets:
+* https://johnarevalo.github.io/2015/02/18/multimodal-datasets.html
