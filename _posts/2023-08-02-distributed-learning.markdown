@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Distributed training"
+title:  ""
 date:   2023-08-02 21:00:00 +0200
 categories: deep-learning 
 #toc: true
