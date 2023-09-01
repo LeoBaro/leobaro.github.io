@@ -1,7 +1,7 @@
 ---
 layout: post
-title:  "An introduction on multimodal learning"
-date:   2023-08-01 10:00:00 +0200
+title:  #"An introduction on multimodal learning"
+date:   #2023-08-01 10:00:00 +0200
 categories: deep-learning
 #toc: true
 ---
@@ -298,11 +298,75 @@ Contrastive representation learning is a very wide field of study. I'll recommen
  
 
 ### Representation by Fission
-In this case, the number of representations is greater then the number of modalities. Modalities can interact with each other in more than one way. Let's think about language and vision. A word can have different types interactions: it can directly correspond to a name of an object or it can have a different type of relation with that object (e.g. parent, use by, ..). Fission is a way to model all these types of relationships with different representations. In this sense we could interchange the name *fission* with *factorization*.  
+In this case, the number of representations is greater then the number of modalities. In fact, modalities can interact with each other in more than one way. Let's think about language and vision. A word can have different types interactions: it can directly correspond to a name of an object or it can have a different type of relation with that object (e.g. parent, use by, ..). Fission is a way to model all these types of relationships with different representations. In this sense we could interchange the name *fission* with *factorization*.  As we can see from Fig.21, tha goal of fission representation is to learn factorized representations i.e. representations that capture the information specific particular modalities and representations that capture the information that is in common between modalities. 
 
 | ![types of fissions](/assets/2023-08-01-multimodal/fission.jpg)| 
 |:--:|                 
 | *Figure 21*: Sub-challenge of Fission. Credits to: [CMU Multimodal Machine Learning course, Fall 2022](https://www.youtube.com/watch?v=65xxHVyHKi0&list=PL-Fhd_vrvisNM7pbbevXKAbT_Xmub37fA&index=9&t=905s) |
 
+#### Modality-level fission
 
-> **Work in progress....**
+A naive way to build a system capable to learn modality-level factorized representations is to train three different encoders:
+* the first gets the fist modality A as input
+* the second get the second modality B as input
+* the third gets both the first and second modalities as input
+The we could use their output to make predictions. The problem with this solution is that there's no guarantee that the first and second encoders will learn modality-specific features. 
+
+[Tsai et al. 2019](https://arxiv.org/pdf/1806.06176.pdf) proposed a joint generative-discriminative objective to factorizes representations into two sets of independent factors: multimodal discriminative and modality-specific generative factors. This architecture is shown in Fig.21. The paper explains that:
+> *Multimodal discriminative factors are shared across all modalities and contain joint multimodal features required for discriminative tasks such as sentiment prediction. Modality-specific generative factors are unique for each modality and contain the information required for generating data*
+
+The objectives that generate factorization are three losses:
+- a discriminative loss for the multimodal autoencoder  
+- a generate loss for both unimodal autoencoder
+- a "no-overlap" loss enforced between $Q_{Z_{y}}$ and $Q_{Z_{a1}}$, $Q_{Z_{y}}$ and $Q_{Z_{a2}}$ and $Q_{Z_{y}}$ and $Q_{Z_{a3}}$.
+
+| ![Learning Factorized Multimodal Representations](/assets/2023-08-01-multimodal/mfm.jpg)| 
+|:--:|                 
+| *Figure 21*: The Multimodal Factorization Model with three modalities.   Credits to: [Tsai et al. 2019](https://arxiv.org/pdf/1806.06176.pdf).|
+
+---
+
+Another approach to achieve modality-level fission is based on *Information Theory* by [Shannon, 1948](https://ieeexplore.ieee.org/document/6773024) that defines the *Information Content I* of a sample $x$ as:
+
+$$I(x)\sim\frac{1}{p(x)}$$
+
+The less probable $x$ is, the less information it carries. The quantity above does not have a superior limit, so let's take the $log$:
+
+$$I(x)=-\log(p(x))$$ 
+
+Given the definition above, we can compute the (discrete) information content of a modality, called *Entropy* as:
+
+$$H(X)=\mathbb{E}[I(X)]=\mathbb{E}[-\log(p(X))]=-\sum_{n=1}^{\infty}p(X)\log(p(X)) = 1$$ 
+
+where $X$ is a discrete random variable.  
+
+If two modalities are independent, $H$ will describe their entropy. But in real-world scenarios, modalities are interconnected. If we want to factorize which features overlaps and which are modality-specific, we need to introduce two other definitions: *conditional entropy* and *mutual information*.
+
+Conditional entropy is defined as:
+
+$$H(A|B)=-\mathbb{E}_{A,B}[\log\frac{p(a,b)}{p(a)}]$$
+
+Mutual information is defined as:
+
+$$I(A;B)=H(A)-H(A|B)=\mathbb{E}_{A,B}[\log\frac{P_{AB}(a,b)}{P_A(a)P_B(B)}]$$
+
+| ![information gain](/assets/2023-08-01-multimodal/ig.jpg)| 
+|:--:|                 
+| *Figure 22*: Conditional Entropy and Mutual Information. Credits to: [CMU Multimodal Machine Learning course, Fall 2022](https://www.youtube.com/watch?v=65xxHVyHKi0&list=PL-Fhd_vrvisNM7pbbevXKAbT_Xmub37fA&index=9&t=905s). |
+
+
+[Colombo et al. 2021](https://arxiv.org/abs/2109.00922) developed a Fusion approach by defining a loss based on MI: two input modalities are fused togheter by minimizing the loss relative to the downstream task and by minimizing the loss associated to the their mutual information score. However, this approach will create a representation containing only the commonalities between the modality and not modality-specific features. This is fine under the assumption that the information present in both modaltiies is the most important for the downstream task.
+
+[Tsai et al. 2020](https://arxiv.org/abs/2006.05576) showed that there's a link between Information Theory and Self-Supervised learning with data augmentation: different views of the same data are generated using shifts, adding noise and so on. We can think of them as different modalities but grounded in the original source space: high mutual information, low conditional entropy.
+
+
+
+
+
+
+
+
+
+
+
+

@@ -91,8 +91,8 @@ PyTorch Lightining
 HuggingFace Accelerate
 ..
 
-
-
+!!
+https://www.latent.space/p/transformers-math#details
 
 More articles
 =============
