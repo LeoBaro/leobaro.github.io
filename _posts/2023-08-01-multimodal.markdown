@@ -43,12 +43,12 @@ The properties of multimodal data
 We're used to the unimodal data source, whose spectrum goes from raw (close to the sensor that captured it) to more abstract representations. For example, a microphone records speech (sound waves) that can be translated into written language (tokens) and analyzed to extract high-order descriptions such as sentiment. The representation spectrum is also in other modalities, such as images, and nothing stops us from integrating all this information, regardless of the abstraction level. Integrating different modalities closer to the raw spectrum is more challenging because they tend to be more heterogeneous than higher-level ones. **Heterogeneity** is a crucial concept in multimodal learning, and it's manifested along the following dimensions:
 * **Representation** refers to the representation used in the sample space. Examples: set of characters (text) vs. matrixes (images) vs. nodes and edges (graphs). 
 * **Distribution**: Different modalities have different distributions and frequencies of samples (the number of objects per image generally has a lower frequency than the number of words in a sentence).
-* **Structure**: Images have spatial structure, while sentences have sequential structure. In addition, the latent space has a structure that can differ across modalities. 
+* **Structure**: Images have spatial structure, while sentences have sequential structure. In addition, the latent space has a structure that can differ across modalities.
 * **Information**: the total information that can be extracted from a modality. It depends on the abstraction level: image data can be exploited from raw pixels to object categories.
 * **Noise**: occlusion in images, typos in NLP, missing data, and so on.
 * **Relevance**: to a specific task we want to address. 
 
-So, although different modalities can be very different and they can bring their unique information, they can be *connected* by sharing complementary information. **Connection** is another crucial concept in multimodal learning. What is the form of these connections? We can see it from a bottom-up (statistical) or top-down view (semantic). Statistically speaking, elements that co-occur (cor)relate to each other, called *association*. On the semantic side, a *correspondence* is the presence of the same element (with the same semantic) in both elements of different modalities. The statistical *dependency* is a stronger connection type, which identifies causal relations. The equivalent in the semantic world is called *relationship*. TODO: examples. These two properties can help to define multimodal as:
+So, although different modalities can be very different and they can bring their unique information, they can be *connected* by sharing complementary information. **Connection** is another crucial concept in multimodal learning. The *Heterogeneity* and *Connection* properties are used to define *multimodal* as:
 
 > :bulb: **multimodal: the science of heterogeneous and interconnected data**
 
@@ -108,7 +108,7 @@ The multiplicative term models the interaction between $x_A$ and $x_B$, while $\
 The model could examine how individual study hours and group study interactions impact exam performance.
 
 The next paragraphs will explain the following fusion techniques:
-| ![fusion tehcniques](/assets/2023-08-01-multimodal/fusions.jpg)| 
+| ![fusion techniques](/assets/2023-08-01-multimodal/fusions.jpg)| 
 
 #### Additive, Multiplicative, and Tensor Fusion
 
@@ -193,8 +193,7 @@ $y=f_A(x_A) + f_B(x_B)$
 
 The authors created a diagnostic tool called *Empirical Multimodally-Additive function Projection* (EMAP) to isolate whether cross-modal interactions improve performance for a given model on a given task. They found that in many cases for seven image+text classification tasks, removing cross-modal interactions results in little to no performance degradation. 
 
-Another discriminating factor is whether the model is trained to solve a downstream task. In the latter case, the learned representation will be optimized to solve the task the model is trained for. Hence, it will not contain the complete multimodal information but only the one that matters. On the other hand, [Ngiam1 et al. (2011)](https://dl.acm.org/doi/10.5555/3104482.3104569) proposed one of the first deep models to learn a shared representation between modalities to "*demonstrate cross modality feature learning, where better features for one modality (e.g., video) can be learned if multiple modalities (e.g., audio and video) are present at feature learning time*". They a bimodal deep autoencoder shown in Fig.14 on audio and video data in a denoising
-fashion, using an augmented dataset with examples that require the network to reconstruct both modalities gave only one. 
+Another discriminating factor is whether the model is trained to solve a downstream task. In the latter case, the learned representation will be optimized to solve the task the model is trained for. Hence, it will not contain the complete multimodal information but only the one that matters. On the other hand, [Ngiam1 et al. (2011)](https://dl.acm.org/doi/10.5555/3104482.3104569) proposed one of the first deep models to learn a shared representation between modalities to "*demonstrate cross-modality feature learning, where better features for one modality (e.g., video) can be learned if multiple modalities (e.g., audio and video) are present at feature learning time*". They trained a bimodal deep autoencoder, shown in Fig.14, on audio and video data in a denoising fashion, using an augmented dataset with examples that require the network to reconstruct both modalities giving only one. 
 
 | ![bimodal deep autoencoder](/assets/2023-08-01-multimodal/ngiam_2011.jpg)| 
 |:--:|                 
@@ -270,7 +269,7 @@ The two separated autoencoders are trained and coordinated together through the 
 | *Figure 19*: Multimodal vector space arithmetic. Credits: [Kiros et al. 2014](https://arxiv.org/abs/1411.2539)|
 
 
-Seven years after, the *Contrastive Language-Image Pre-training (CLIP)* by [Radford et al. 2021](https://arxiv.org/abs/2103.00020) (OpenAI), has been released. It shares the same principles as [Kiros et al. 2014](https://arxiv.org/abs/1411.2539) with a slightly different loss. CLIP was a breakthrough proving that the large-scale weak-supervision contrastive training paradigm can also be applied for vision and not only text (such as GPT). The pretrain dataset comprises 400 million (image, text) pairs, and the learning objective is to predict the captions that go with a particular image. During pretraining, CLIP learns to associate images and text by contrasting positive pairs (an image and its corresponding text) against negative pairs (an image with randomly sampled text and vice versa). The model is trained to make the positive pair's similarity higher (matrix diagonal in Fig.20) than the negative pair's similarity.
+Seven years later, the *Contrastive Language-Image Pre-training (CLIP)* by [Radford et al. 2021](https://arxiv.org/abs/2103.00020) (OpenAI), has been released. It shares the same principles as [Kiros et al. 2014](https://arxiv.org/abs/1411.2539) with a slightly different loss. CLIP was a breakthrough proving that the large-scale weak-supervision contrastive training paradigm can also be applied for vision and not only text (such as GPT). The pre-train dataset comprises 400 million (image, text) pairs, and the learning objective is to predict the captions that go with a particular image. During pretraining, CLIP learns to associate images and text by contrasting positive pairs (an image and its corresponding text) against negative pairs (an image with randomly sampled text and vice versa). The model is trained to make the positive pair's similarity higher (matrix diagonal in Fig.20) than the negative pair's similarity.
 
 | ![clip](/assets/2023-08-01-multimodal/clip.jpg)| 
 |:--:|                 
@@ -314,7 +313,7 @@ The objectives that generate factorization are three losses:
 
 ---
 
-Another approach to achieve modality-level fission is based on *Information Theory* by [Shannon, 1948](https://ieeexplore.ieee.org/document/6773024) that defines the *Information Content I* of a sample $x$ as:
+Another approach for achieving modality-level fission is based on *Information Theory* by [Shannon, 1948](https://ieeexplore.ieee.org/document/6773024) which defines the _Information_ Content I* of a sample $x$ as:
 
 $$I(x)\sim\frac{1}{p(x)}$$
 
@@ -349,7 +348,7 @@ $$I(A;B)=H(A)-H(A|B)=\mathbb{E}_{A,B}[\log\frac{P_{AB}(a,b)}{P_A(a)P_B(B)}]$$
 
 #### Fine-grained fission
 
-The right panel of Fig.21 shows a fine-grained clustering of different interactions. This sub-field is still an active research area. [Hu et al. 2019](https://arxiv.org/pdf/1807.03094.pdf) proposed a contribution in this context with their *Deep Multimodal Clustering* algorithm, which aim is to find the multimodal correspondences between visual features from images and audio features from audio clips (associated to the images), in an unsupervised way. Two unimodal networks (CNNs) are used to extract the feature maps. A clustering network puts together the visual feature maps with the corresponding audio feature maps. They trained the multimodal clustering network end-to-end using pair visual-audio data with a max-margin loss. 
+The right panel of Fig.21 shows a fine-grained clustering of different interactions. This sub-field is still an active research area. [Hu et al. 2019](https://arxiv.org/pdf/1807.03094.pdf) proposed a contribution in this context with their *Deep Multimodal Clustering* algorithm, whose aim is to find the multimodal correspondences between visual features from images and audio features from audio clips (associated with the images), in an unsupervised way. Two unimodal networks (CNNs) are used to extract the feature maps. A clustering network combines visual feature maps with audio feature maps. They trained the multimodal clustering network end-to-end using pair visual-audio data with a max-margin loss. 
 
 | ![deep multimodal clustering](/assets/2023-08-01-multimodal/deep_multimodal_clustering.jpg)| 
 |:--:|                 
@@ -357,3 +356,20 @@ The right panel of Fig.21 shows a fine-grained clustering of different interacti
 
 The Co-Clustering Module (shown in Fig.24) tries to find the relations and correspondences between different objects and different sounds. As the paper explained:
 > *"The aforementioned clusters indicate a kind of soft assignment (segmentation) over the input image or spectrogram, where each cluster mostly corresponds to certain content (e.g., baby face and drum in image, voice and drumbeat in sound), hence they can be viewed as the distributed representations of each modality."*
+
+## Alignment
+*Representation* only considered one element from each modality. On the other hand, *Alignment* wants to identify and model cross-modal **connections** between **all elements** of multiple modalities. Fig.26 shows a taxonomy of the sub-challenge of the *Alignment* problem. 
+
+| ![alignment](/assets/2023-08-01-multimodal/alignment.jpg)| 
+|:--:|                 
+| *Figure 26*: Discrete alignment identifies connections among discrete elements, continuous alignment applies to continuous signals with ambiguous segmentation, and contextualized representation captures these cross-modal learns to capture the interactions between connected elements. Credits to: [P. Liang, et al. (2023)](https://arxiv.org/abs/2209.03430).|
+
+But what does *connection* mean? Modality connections describe how modalities are related and share commonalities, such as correspondences between the same concept in language and images or dependencies across spatial and temporal dimensions. It is a relation that can be approached from **statistical** and **semantic** standpoints alike. The first one is an unsupervised *bottom-up* approach, while the second is *top-down* and requires supervised labels. 
+
+| ![connections](/assets/2023-08-01-multimodal/connections.jpg)| 
+|:--:|                 
+| *Figure 27*: Different types of *connections*. Credits to: [P. Liang, et al. (2023)](https://arxiv.org/abs/2209.03430).|
+
+Statistically speaking, elements that co-occur (cor)relate to each other, called **Association**. On the semantic side, a **Correspondence** is the presence of the same element (with the same semantic) in both elements of different modalities. Statistical **Dependency** is a stronger connection type, which identifies causal relations. The equivalent in the semantic world is called a **Relationship**.
+
+*Language Grounding* is the association of linguistic elements (words, phrases, etc.) to visual objects. Grounding is more general and it can be applied to each pair of modalities. For example, a robot may learn that the symbol *jump* correlates with a sudden loss of pressure on the soles of its feet. Suppose we have paired data of images and words. This dataset can be strongly supervised (e.g. manually annotated by a human) or weak/limited supervised (e.g. extracted from Wikipedia's pages). The latter is called *weak* because even if the text and the images have been extracted from the same page, is not 100% sure that they semantically correspond. Let's say we have strongly supervised paired data. A strategy to solve the problem is to use Coordination (or contrastive learning) to learn a space of common information (and a similarity function) and then exhaustively go through all the objects and nouns and compare them to find the closest one, such as an image retrieval problem. 
