@@ -358,6 +358,8 @@ The Co-Clustering Module (shown in Fig.24) tries to find the relations and corre
 > *"The aforementioned clusters indicate a kind of soft assignment (segmentation) over the input image or spectrogram, where each cluster mostly corresponds to certain content (e.g., baby face and drum in image, voice and drumbeat in sound), hence they can be viewed as the distributed representations of each modality."*
 
 ## Alignment
+
+### Discrete Alignment
 *Representation* only considered one element from each modality. On the other hand, *Alignment* wants to identify and model cross-modal **connections** between **all elements** of multiple modalities. Fig.26 shows a taxonomy of the sub-challenge of the *Alignment* problem. 
 
 | ![alignment](/assets/2023-08-01-multimodal/alignment.jpg)| 
@@ -373,3 +375,28 @@ But what does *connection* mean? Modality connections describe how modalities ar
 Statistically speaking, elements that co-occur (cor)relate to each other, called **Association**. On the semantic side, a **Correspondence** is the presence of the same element (with the same semantic) in both elements of different modalities. Statistical **Dependency** is a stronger connection type, which identifies causal relations. The equivalent in the semantic world is called a **Relationship**.
 
 *Language Grounding* is the association of linguistic elements (words, phrases, etc.) to visual objects. Grounding is more general and it can be applied to each pair of modalities. For example, a robot may learn that the symbol *jump* correlates with a sudden loss of pressure on the soles of its feet. Suppose we have paired data of images and words. This dataset can be strongly supervised (e.g. manually annotated by a human) or weak/limited supervised (e.g. extracted from Wikipedia's pages). The latter is called *weak* because even if the text and the images have been extracted from the same page, is not 100% sure that they semantically correspond. Let's say we have strongly supervised paired data. A strategy to solve the problem is to use Coordination (or contrastive learning) to learn a space of common information (and a similarity function) and then exhaustively go through all the objects and nouns and compare them to find the closest one, such as an image retrieval problem. 
+
+Alignment can also be **direct** in the sense it creates one-way connections between elements. One example is *Image Captioning*, in which a direct connection between the generated words and the objects in the image. The *attention* mechanism can help to solve *Image Captioning* and it can be applied in a *soft* or *hard* fashion. *Soft attention* will look at every patch of the image (computing the gradient is much easier since a softmax can be used to compute soft-attention weights for each object) while *Hard *attention* looks at only one patch to find one object (and its 0-1 signal is harder to derive, usually requiring reinforcement learning). [Xu et al., 2015](https://arxiv.org/abs/1502.03044) introduced an attention-based model that automatically learns to describe the content of images. This was one of the first approaches using a CNN and a language model to implement attention without transformers. 
+
+In the previous examples, we talked about *local alignment* in which we want to find the correspondence between two elements without considering the others. However, we can also talk about *global alignment* in which we want to find the correspondence between two elements but we need to take into account all the possible alternatives that I could align together. For example, before a visual object is connected to a word we need to consider all the possible words that could be connected to that object and we need to find the best alignment between them (based on the similarity function). So, a way to solve it is first to learn a representation space and a similarity score between the two modalities. 
+The above problem can be illustrated with a 
+bipartite graph i.e., a graph in which the nodes can be divided into two independent sets $A$ and $B$ such that every edge connects a node in $A$ to one in $B$. Then, depending on the assumptions, we can generalize the problem to known formulations. For example, let's say we assume:
+* an equal number of elements in both modalities;
+* a one-to-one *hard* correspondence between; elements
+* assign all elements i.e. *perfect matching*;
+
+Hence we can formalize the above in the *Linear Programming* framework and solve it with the simplex algorithm by [Dantzig, 1956](https://www.rand.org/pubs/papers/P891.html).
+
+However, the assumptions made are too simple and not realistic. We can relax them and generalize the problem to:
+* different number of elements in both modalities;
+* a many-to-many *soft* correspondence between; elements
+* assign all elements i.e. *perfect matching*;
+
+The formulation above is an *optimal transport* problem i.e., finding the optimal way to transport a given distribution of objects to another location (in this case it can be seen as *transporting* elements from modality A to modality B, and vice versa), given the cost of transporting each object. The optimal transport problem has been studied since the 18th century, and it has been applied to many fields, such as economics, statistics, and computer vision. [Villani, 2008](https://arxiv.org/abs/math/0603600) showed that the optimal transport problem can be formulated as a *linear program*. 
+
+### Continuous Alignment
+Continuous alignment applies to continuous signals with ambiguous segmentation (no explicit elements). 
+There's a spectrum of techniques to deal with alignment. Let's say we have continuous signals. On one side we have *warping* that synchronizes them in time. On the other side, we have *segmentation* which tries to discretize the signal into elements. 
+
+[Zhou and Torre, 2009](https://papers.nips.cc/paper_files/paper/2009/hash/2ca65f58e35d9ad45bf7f3ae5cfd08f1-Abstract.html) combined the *Canonical Correlation Analysis* with the *Dynamic Time Warping* algorithms to allow representation (transforming the data to maximize correlations) and continuous spatiotemporal alignment at the same time. 
+
