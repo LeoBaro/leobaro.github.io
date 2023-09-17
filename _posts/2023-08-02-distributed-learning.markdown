@@ -103,3 +103,16 @@ https://github.com/microsoft/DeepSpeed
 https://www.microsoft.com/en-us/research/blog/using-deepspeed-and-megatron-to-train-megatron-turing-nlg-530b-the-worlds-largest-and-most-powerful-generative-language-model/
 https://www.microsoft.com/en-us/research/blog/deepspeed-extreme-scale-model-training-for-everyone/
 https://www.microsoft.com/en-us/research/blog/zero-deepspeed-new-system-optimizations-enable-training-models-with-over-100-billion-parameters/
+
+https://www.mishalaskin.com/posts/tensor_parallel
+https://www.microsoft.com/en-us/research/blog/deepspeed-extreme-scale-model-training-for-everyone/
+https://www.microsoft.com/en-us/research/blog/zero-2-deepspeed-shattering-barriers-of-deep-learning-speed-scale/
+https://www.microsoft.com/en-us/research/blog/zero-deepspeed-new-system-optimizations-enable-training-models-with-over-100-billion-parameters/
+https://www.deepspeed.ai/training/
+https://huggingface.co/blog/bloom-megatron-deepspeed#tensor-parallelism
+
+https://towardsdatascience.com/how-to-scale-training-on-multiple-gpus-dae1041f49d2
+
+https://medium.com/south-park-commons/scaling-transformer-xl-to-128-gpus-85849508ec35
+
+https://www.latent.space/p/transformers-math#details
