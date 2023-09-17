@@ -16,7 +16,7 @@ categories: deep-learning
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
 
 
-<p>Estimated reading time: 15 minutes.</p>
+<p>Estimated reading time: 30 minutes.</p>
 
 Introduction
 ============
@@ -322,51 +322,6 @@ The animation in *Figure 15* shows how the decoding stage works. In the *Encoder
 |:--:| 
 | *Figure 16*: The final layers of the *Transformer* architecture: linear and softmax. Credits: [A. Vaswani, et al. (2017)](https://arxiv.org/pdf/1706.03762.pdf) |
 
-## GPT vs BERT
-Both GPT (Generative Pre-training Transformer) from OpenAI and BERT (Bidirectional Encoder Representation with Transformer) from Google Brain are two popular large language model architectures derived from the Transformer. The BERT's architecture is composed of a stack of Transformer encoders, while GPT's one is a stack of Transformer decoders. The goal of large language model is to address specific tasks such as neural machine translation, question answering, sentiment analysis, text summarization and so on. Language and context understanding is a prerequisite and it's done in both architecture via pretraining on a huge corpus of text. Then, the models are fine-tuned to address the specific down stream tasks. The two architectures use different pre-training objectives.
-
-### BERT pre-training and fine-tuning 
-
-BERT uses two objectives simultaneously: *Masked Language Model* (MLM) and *Next Sentence Prediction* (NSP).
-
-| <img src="/assets/2023-06-29-transformers/bert.jpg" alt="BERT pre-training and fine-tuning" width="200"/> | 
-|:--:| 
-| *Figure 17*: Overall pre-training and fine-tuning procedures for BERT. Apart from output layers, the same architectures are used in both pre-training and fine-tuning. The same pre-trained model parameters are used to initialize models for different down-stream tasks. During fine-tuning, all parameters are fine-tuned. [CLS] is a special symbol added in front of every input example, and [SEP] is a special separator token (e.g. separating questions/answers). Credits to: [J. Devlin, et al. (2019)](https://arxiv.org/abs/1810.04805) |
-
-
-The first objective helps BERT to learn about bidirectional context understanding within a phrase, while the second understand context accross different sentences. 
-
-The *Masked Language Model* objective works by selecting text from the training corpus and then by masking some tokens. For example: 
-> [CLS] BERT is based on the [$MASK_1$] architecture. [SEP] Specifically, BERT is [$MASK_2$] of Transformer encoder [$MASK_3$].
-
-BERT has to predict the selected (masked) tokens given their context. Left panel of Fig.17 illustrates this. The input is a set of two sentences with masked tokens. Each token is converted to embeddings using a pre-trained model. Then, the NSP output is the binary answer to NSP, while $T_1, ..T_N,[SEP],T_1^1,.., T_M^1$ is the output of MLM.  
-
-The *Next Sentence Prediction* objective makes the model predicts if two spans of texts appear sequentially in the training corpus or not. For example, given the following: 
-> "[CLS] BERT is based on the Transformer architecture. [SEP] Specifically, BERT is composed of Transformer encoder layers." 
-
-the model should output token `[IsNext]`.
-
-While given the following:
-> "[CLS] BERT is based on the Transformer architecture. [SEP] Finally, you can add two onces of gin." 
-
-the model should output token `[NotNext]`.
-
-Hence, BERT outputs a binary value for NSP and a bunch of word vectors tokens for MLM. How the loss is generated? Each generated word vector token is passed to softmax layer with 30.000 neurons in order to get a distribution of vocabulary words probability. This output vector is compared with an one-hot encoding of the ground truth word with a cross-entropy loss, but only the word vector tokens corresponding to the masked tokens are taken into account. 
-
-Now the model can be fine-tuned to specific tasks. The right panel of Fig.17 shows the fine-tuning procedure for question answering: the goal is to process a question-paragraph pair and output the start and end words in the paragraph that encapsulate the anwser. *SQuAD* is the Stanford Question Answering Dataset by [P. Rajpurkar et al., 2016](https://arxiv.org/abs/1606.05250), a reading comprehension dataset, consisting of questions posed by crowdworkers on a set of Wikipedia articles, where the answer to every question is a segment of text, or span, from the corresponding reading passage, or the question might be unanswerable. The fine-tuning is about 30 minutes on a TPU reaching a 91% F1-score on *SQuAD*. However, the maximum accuracy BERT can achieve depends on the model size: the BERT base model has 12 stacked encoders for a total of 110 million parameters while BERT large double it.   
-
-
-TODO: pretraining and fine tuning for GPT
-
-Talking about embeddings, BERT uses the WordPieces with a 30K vocabulary to generate the token embeddings, it adds to them segment embeddings (i.e. the sentence number encoded into a vector) and the position embeddings (i.e. the word position within that sentence). 
-    
-
-## Towards multimodality
-
-
-
-## TODO:
-* Explain the purpose of the linear projection in the attention head
 
 # Conclusion
 
