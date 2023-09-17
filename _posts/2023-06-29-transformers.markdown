@@ -16,7 +16,7 @@ categories: deep-learning
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
 
 
-<p>Estimated reading time: 15 minutes.</p>
+<p>Estimated reading time: 30 minutes.</p>
 
 Introduction
 ============
@@ -323,7 +323,11 @@ The animation in *Figure 15* shows how the decoding stage works. In the *Encoder
 | *Figure 16*: The final layers of the *Transformer* architecture: linear and softmax. Credits: [A. Vaswani, et al. (2017)](https://arxiv.org/pdf/1706.03762.pdf) |
 
 ## GPT vs BERT
-Both GPT (Generative Pre-training Transformer) from OpenAI and BERT (Bidirectional Encoder Representation with Transformer) from Google Brain are two popular large language model architectures derived from the Transformer. The BERT's architecture is composed of a stack of Transformer encoders, while GPT's one is a stack of Transformer decoders. The goal of large language model is to address specific tasks such as neural machine translation, question answering, sentiment analysis, text summarization and so on. Language and context understanding is a prerequisite and it's done in both architecture via pretraining on a huge corpus of text. Then, the models are fine-tuned to address the specific down stream tasks. The two architectures use different pre-training objectives.
+Both GPT (Generative Pre-training Transformer) from OpenAI and BERT (Bidirectional Encoder Representation with Transformer) from Google Brain are two popular large language model architectures derived from the Transformer. The BERT's architecture is composed of a stack of Transformer encoders, while GPT's one is a stack of Transformer decoders. The goal of large language model is to address specific tasks such as neural machine translation, question answering, sentiment analysis, text summarization and so on. To achieve these goals, language and context understanding is a prerequisite and it's done in both architecture via pretraining on a huge corpus of text. Then, the models are fine-tuned to address the specific down stream tasks. 
+
+BERT jointly learns representation for token-level and sentence level, modeling bidirectional and long-range relations between tokens. In addition, it uses the same architecture for pre-training and fine-tuning.
+
+BERT and GPT use different pre-training objectives.
 
 ### BERT pre-training and fine-tuning 
 
@@ -361,7 +365,43 @@ TODO: pretraining and fine tuning for GPT
 Talking about embeddings, BERT uses the WordPieces with a 30K vocabulary to generate the token embeddings, it adds to them segment embeddings (i.e. the sentence number encoded into a vector) and the position embeddings (i.e. the word position within that sentence). 
     
 
+## Beyond text: Vision Transformer
+Image data is different from text in the sense that it has a grid structure that enforce the locality principle: pixels close to each other are semantically related. Convolutional neural networks (CNNs) were developed to exploit the inductive bias of translation equivariance and locality.
+
+In very recent times, researchers understood that self-attention can completely replace convolutions. Indeed self-attention can be applied also at the pixel level, as shown by *Fig.18*. 
+| <img src="/assets/2023-06-29-transformers/pixel_self_attention.jpg" alt="self-attention pixels" width="300"/> | 
+|:--:| 
+| *Figure 18*:  |
+
+The main problem with this approach is the quadratic cost in the number of pixels that prevent scaling capabilities. 
+
+[Dosovitskiy et al. 2021](https://arxiv.org/abs/2010.11929v2) proposed the *Vision Transformer* (ViT) which completely removes convolutional layers and only relies on self-attention. As shown in *Fig.28*, the input image is splitted into patches, each patch is embedded with a linear projection, a 1D positional embeddings are added to it and the sequence is given to the BERT's encoder Transformer. As in BERT, an extra classification learnable token is added to the sequence. When trained with large datasets, ViT improved SOTA on many image classification tasks.
+
+TODO: add picture
+
+Altough its capability, the ViT model was trained to solve class prediction. When comparing the object classes the model does not need to learn all the subtle details. For example, to recognize a person, the model just need to recognize a face, regardless if the person's mouth is open or closed. 
+
+The next architecture Masked Auto-Encoder by [He at al. 2022]() will address the above limitation. *Fig.19* shows the pre-training process. The majority of the input image is masked, encoded with a ViT and decoded with a Transformer only during pre-training, while minimizing a reconstruction loss. 
+
+| <img src="/assets/2023-06-29-transformers/mae.jpg" alt="self-attention pixels" width="300"/> | 
+|:--:| 
+| *Figure 19*:  Credits to: [He at al. 2022]() |
+
+It's worth to understand why this great amount of masking applied to the input image is essential to a successfull learning. On extreme, masking and reconstructing only one pixel is a straighforward task: the model would just use the local context of the pixel's neighbourhood. On the other hard, a great amount of masking hides the local neighbourhood and forces the model to understand the overall image in a holistic perspective. 
+
 ## Towards multimodality
+One of the biggest problem in multimodal learning is the weakly supervision. Most of the time, the sequences of different modalities contains samples that have not a direct correspondence. One of the goal of multimodal learning (as highlighted in another post of this blog), is to learn how the modalities interact, i.e. which modalities elements are related and how they influence the output.
+
+In this regards, transformers are very good at contextualizing and finding these kind of relationships. Once researches understood how to handle visual information inside transformers, new vision-language architectures started to come out. One example is ViLT (Visual and Language Transformer) by [????](https://arxiv.org/abs/2102.03334), which proposed an architecture based on the BERT's encoder which inputs tokens are embeddings from text (encoded with Word Embedding) and image patches (encoded with a ViT). 
+
+| <img src="/assets/2023-06-29-transformers/bert_vit.jpg" alt="bert vit" width="300"/> | 
+|:--:| 
+| *Figure 20*:  Credits to: [????](https://arxiv.org/abs/2102.03334) |
+
+As shown by *Fig.20*, three different embeddings are added to the sequence: a *model-type* embedding to distinguish between modalities, a *token position* embedding and a *patch position* embedding. With an *optimal transport* loss, the model learns the interactions between the token words and token image patches. 
+
+In very recent times, there's a trend to exploit pre-trained CLIP and LLAMA models to perform the modality encoding. One example is *Emu*, a Transormer-baed multimodal foundation model by [Sun et al. 2023](https://arxiv.org/abs/2307.05222v1). It's capable of solving image-to-text and text-to-image tasks in a zero-shot/few-shot manner. 
+
 
 
 
@@ -374,5 +414,8 @@ I hope you liked the post!
 
 Now, it's time to get your hands dirty! Let the implementation begins 🤓
 
-- [Karpathy's minGPT](https://github.com/karpathy/minGPT) and [nanoGPT](https://github.com/karpathy/nanoGPT)
-- [Harvard's implementation](https://nlp.seas.harvard.edu/annotated-transformer/#full-model) of [A. Vaswani, et al. (2017)](https://arxiv.org/pdf/1706.03762.pdf) 
+- [Karpathy's minGPT](https://github.com/karpathy/minGPT) and [nanoGPT](https://github.com/karpathy/nanoGPT).
+- [Harvard's implementation](https://nlp.seas.harvard.edu/annotated-transformer/#full-model) of [A. Vaswani, et al. (2017)](https://arxiv.org/pdf/1706.03762.pdf). 
+
+More links:
+- https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2
