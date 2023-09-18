@@ -18,9 +18,43 @@ categories: deep-learning multi-modal-learning
 
 <p>Estimated reading time: ? minutes.</p>
 
+Introduction
+============
+This is the second blog post of a series about *Multimodal Machine Learning*. In practice, these are my notes from the course held by Carnegie Mellon University: [11-777 Multimodal Machine Learning, 2022 Fall](https://cmu-multicomp-lab.github.io/mmml-course/fall2022/) and the review paper of [P. Liang, et al. (2023)](https://arxiv.org/abs/2209.03430). 
+In this post, I am going to give you an introduction to the *Multimodal Machine Learning* field and in particular to the second big research sub-topic called *Multimodal Alignment*. 
+
+If you missed part one on *Multimodal Representation*, [here's the link](https://leobaro.github.io/deep-learning/2023/08/01/multimodal-representation.html).
+
 
 ## Alignment
-The second big research topic in multimodal learning is Alignment. Alignment refers to the process of ensuring that the representations of different modalities are compatible or synchronized in the same space so that they can be effectively compared, fused, or used jointly in machine learning tasks.
+The second big research topic in multimodal learning is *alignment*. Alignment refers to the process of identifying and modeling cross-modal connections between all elements of multiple modalities. This ensures that the representations of different modalities are compatible or synchronized in the same space so that they can be effectively compared, fused, or used jointly in machine learning tasks.
+
+The three major sub-challenges of alignment are shown in Fig.1. Discrete alignment involves discrete elements such as the list of objects in an image. Continuous alignment involves continuous signals in which it's not straightforward to segment individual objects. Contextualized Representation is about learning representation over structured data and it involves alignment + representation. In this case, we're not aligning single elements but we consider the context: the meaning of a word depending on the other words, the meaning of an object depending on the other object or the meaning of an object depending on the other words and objects.
+
+|                            ![multimodal alignment](/assets/2023-09-17-multimodal-alignment/alignment.jpg)                             |
+| :-----------------------------------------------------------------------------------------------------------------------------------: |
+| *Figure 1*: different sub-challenges of multimodal alignment. Credits to: [P. Liang, et al. (2023)](https://arxiv.org/abs/2209.03430) |
+
+In which sense two elements are connected? In a statistical they can co-occur or correlate. In this case the connection is called *association*. If we instead consider the semantic of the elements, they are connected in the sense they have similar meaning (grounding). 
+
+|   ![multimodal alignment](/assets/2023-09-17-multimodal-alignment/connections.jpg)    |
+| :-----------------------------------------------------------------------------------: |
+| *Figure 2*: A connection between two multimodal elements can be an *association* (statistical bottom-up view) or a *correspondence* (top-down semantic view). Credits to: [P. Liang, et al. (2023)](https://arxiv.org/abs/2209.03430) |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
