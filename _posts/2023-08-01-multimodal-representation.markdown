@@ -16,7 +16,7 @@ categories: deep-learning
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
 
 
-<p>Estimated reading time: 20.</p>
+<p>Estimated reading time: 20 minutes.</p>
 
 Introduction
 ============
@@ -321,6 +321,13 @@ After representation by Fusion and Coordination, we are going to talk about repr
 |:--:|                 
 | *Figure 22*: Sub-challenge of Fission. Credits to: [CMU Multimodal Machine Learning course, Fall 2022](https://www.youtube.com/watch?v=65xxHVyHKi0&list=PL-Fhd_vrvisNM7pbbevXKAbT_Xmub37fA&index=9&t=905s) |
 
-> **Work in progress....**
+One approach for finding these internal clusters is proposed by [Hu et al. (2019)](https://arxiv.org/abs/1807.03094). The initial step involves the separate processing of visual images and audio spectrograms by two specialized Convolutional Neural Networks (ConvNets). These networks transform the input data into feature maps tailored to their respective modalities. Subsequently, the feature maps are clustered by looking at co-occurence of activations. Examples of such elements include a baby and its associated voice or drumming and its corresponding sound. To complete the training process, the model utilizes the similarity between modalities as a form of supervision. 
+
+| ![multimodal clustering](/assets/2023-08-01-multimodal/multimodal_clustering.jpg)| 
+|:--:|                 
+| *Figure 23*:  Credits to: [Hu et al. (2019)](https://arxiv.org/abs/1807.03094). |
 
 
+# Conclusion
+
+I hope you liked the post! 
