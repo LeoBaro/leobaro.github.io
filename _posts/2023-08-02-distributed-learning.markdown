@@ -1,3 +1,11 @@
+---
+layout: post
+title:  
+date:   
+categories: deep learning 
+#toc: true
+---
+
 
 <p>Estimated reading time: ?.</p>
 
