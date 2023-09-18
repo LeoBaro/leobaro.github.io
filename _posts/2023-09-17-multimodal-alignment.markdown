@@ -1,6 +1,26 @@
+---
+layout: post
+title:  "An introduction on Multimodal Learning (Part 2 - Multimodal Alignment)"
+date:   2023-09-18 10:00:00 +0200
+categories: deep-learning multi-modal-learning
+#toc: true
+---
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$','$'], ['\\(','\\)']],
+      processEscapes: true
+    }
+  });
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+
+
+<p>Estimated reading time: ? minutes.</p>
+
 
 ## Alignment
-The second big research topic in multimodal learning is Alignment. The primary goal of Alignment is to bridge the semantic gap between different modalities. It makes it possible for the model to understand and correlate information from different modalities by mapping them into a shared feature space.
+The second big research topic in multimodal learning is Alignment. Alignment refers to the process of ensuring that the representations of different modalities are compatible or synchronized in the same space so that they can be effectively compared, fused, or used jointly in machine learning tasks.
 
 
 
