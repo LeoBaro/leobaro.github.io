@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "An overview of distributed training"
+title:  "A gentle introduction to distributed training of large deep learning models"
 date:   2023-10-11 21:00:00 +0200
 categories: deep-learning 
 #toc: true
