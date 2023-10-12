@@ -17,20 +17,21 @@ categories: deep-learning
 
 <p>Estimated reading time: 15 minutes.</p>
 
-# Introduction
+## Introduction
 
 In recent times it has been shown that larger model training improve model quality. The development of neural architectures based on [Transformers](https://leobaro.github.io/deep-learning/2023/06/29/transformers.html) let the number of parameters to drammaticaly increase, from 340M of BERT to 530 billion (!) of the largest (at the time of writing) Megatron-Turing NLG model [D. Narayanan et al. (2021)](https://arxiv.org/abs/2104.04473).
-| ![number of parameters](/assets/2023-10-11-distributed-training/model_size.jpg)| 
-|:--:|                 
+
+| ![number of parameters](/assets/2023-10-11-distributed-training/model_size.jpg)|
+|:--:|          
 | *Figure 1*: the dramatic increase in the model size over recent years. Credits: [Large Language Models: A New Moore's Law?](https://huggingface.co/blog/large-language-models).|
 
 Training such big models is challenging for two main reasons: first, a large model does not fit in GPU memory even if a multiple-GPU server node is available and second, the computation complexity of the training process is too high, requiring too much time to make the model reaching the desired accuracy. The only way to cope with this is to enable a **large-scale training infrastructure**. What is needed? A cluster of machines of course, but also software libraries that implement the core optimizations on computing, communication, memory, I/O and hide the complexity of running a distributed training. 
 
-# Two distribution models
+## Two distribution models
 
 Two not-exclusive approaches to achieve distributed training are **data parallelism** and **model parallelism**.
 
-## Data parallelism
+### Data parallelism
 
 The first approach is based on splitting the training data over multiple GPUs (same or different nodes) while the model is replicated. Each replica will use separate batches of training samples. However, each replica's weights can not be updated by its own computed gradients if we don't want the replicas to diverge. Hence a synchronization step is performed to recall all the computed gradients, combine them, and backpropagate them similarly for all the replicas. In the context of HPC this paradigm is called *Single Program Multiple Data* or *SPMD* since the same application runs on all machines but each one operates on different portions of the training dataset. 
 
@@ -77,7 +78,7 @@ To distribute the training to multiple machines, the torchrun command must be ex
 
 
 
-## Model parallelism
+### Model parallelism
 The size of the training data is not the only problem in distributed training. Indeed during a training run:
 * The model's weights are stored in the GPU;
 * The activations gradients are computed;
@@ -89,7 +90,7 @@ We can adopt the second paradigm of distributed training: **model parallelism**.
 
 The two ideas of distributing the data and the model are clear but it's not straightforward to implement it: when a model is segmented over multiple GPUs, gradients and optimizer states are distributed as well, not to mention all the activations for each layer. The naive way, as mentioned before, is to replicate all of them multiple times for each GPU, but this is not a scalable approach.
 
-### Model parallelism with ZeRO
+#### Model parallelism with ZeRO
 The [*Zero Redundancy Optimizer*](https://deepspeed.readthedocs.io/en/latest/zero3.html) (*ZeRO*) removes the memory redundancies across data-parallel processes by partitioning the three model states (optimizer states, gradients, and parameters) across data-parallel processes instead of replicating them. Each GPU has its exclusive piece of the model's weights, gradients, and optimizer's state as well as its subset of training data. This is shown by the image below.
 
 | ![model parallel](/assets/2023-10-11-distributed-training/zero_model_parallel.png)| 
@@ -116,14 +117,14 @@ This procedure is repeated for each GPU and the loss is computed on each GPU for
   
 Now each GPU has its own accumulated gradients from all dataset subsets. Finally, we can perform the parameters update: the optimization step can execute in parallel on each GPU, which results in a new set of model weights. 
 
-Just to recap: rather than copying the complete model parameters, gradients, and optimizer states, each GPU exclusively retains a specific portion. Subsequently, during execution, when the entire layer parameters are required for a specific layer, all GPUs harmonize to exchange the absent segments amongst themselves. This video gives a visual representation of this process.
+Just to recap: rather than copying the complete model parameters, gradients, and optimizer states, each GPU exclusively retains a specific portion. Subsequently, during execution, when the entire layer parameters are required for a specific layer, all GPUs harmonize to exchange the absent segments amongst themselves. 
 
 ZeRO is one of the many optimizations included in the [DeepSpeed](https://github.com/microsoft/DeepSpeed) open-source project by Microsoft.
 
 
 
-Advanced techniques for distributed training
-============================================
+## Advanced techniques for distributed training
+
 Large memory requirement is not the only issue we face when training large models. The other issue is **compute efficiency**. As reported by [Kaplan et al. (2020)](https://arxiv.org/abs/2001.08361), a trillion-parameters model training would require something around 5000 zettaflops i.e. 4000 NVIDIA A100 GPUs running at 50% compute efficiency about 100 days. 
 
 This number does not allow for the democratization of deep learning, only large data centers possess this amount of computing. However, this is not enough. The more GPUs you use, the more communication overhead you have (as highlighted in the previous paragraphs), reducing the computation efficiency. To increase the computation efficiency we could increase the batch size, letting each GPU crunch as many calculations as possible before the I/O step. The problem is that the batch size cannot grow indefinitely, beyond a certain value, the training convergence deteriorates quickly. If we use data parallelism, the more GPUs we use, the more the batch size is split between them, limiting the scalability. 
@@ -162,7 +163,7 @@ This technique is called *mixed* because the 16-bit formats are only used for th
 ### Quantization
 If *mixed precision* is not enough, floating-point numbers can be casted to lower-precision numbers, such as integers or half-precision floating-point numbers. This technique is call *quantization* can further reduce the memory and computational requirements of the model, but it can also lead to accuracy loss.
 
-# Conclusions
+## Conclusions
 Distributed training is a broad set of techniques for training large language models (LLMs) and other complex deep learning models. 
 
 Distributed training is becoming more accessible to everyone, thanks to the development of software libraries and tools, as well as the increasing availability of cloud computing resources. This is leading to a more democratized AI landscape, where more people are able to develop and use large and complex AI models.
