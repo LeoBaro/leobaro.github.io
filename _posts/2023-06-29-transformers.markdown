@@ -191,6 +191,44 @@ Let's break it down:
 - Since dot products can, in general, produce arbitrarily large numbers and undermine the training process, the output is first scaled by a factor $sqrt(embed\\_dim)$ (the embedding dimension, 768 in this example) to normalize the variance and then a normalization is applied with the softmax function. The output matrix is called *attention weights*.  
 - Finally, the projected Value ($V$) embeddings are mixed together, computing a linear combination using the attention weights as coefficients: $v_i' = \sum_{j=1}^{n} w_{ij}v_j$  
 
+If the step-by-step explanation above is not enough, have a look at the  following implementation:
+
+{% highlight python %}
+
+class AttentionHead(nn.Module):
+
+    def _scaled_dot_product_attention(self, q, k, v):
+        k = torch.transpose(k, 1, 2)
+        q_k_scaled = torch.bmm(q, k) / sqrt(q.size(-1))
+        att_w = nn.Softmax(dim=-1)(q_k_scaled)
+        contextualized_emb = torch.bmm(att_w, v)
+        return contextualized_emb
+
+    def __init__(self, emb_size, linear_out_features=None):
+        super().__init__()
+        if linear_out_features is None:
+            linear_out_features = emb_size
+        self.q_linear = nn.Linear(
+            in_features=emb_size, out_features=linear_out_features
+        )
+        self.k_linear = nn.Linear(
+            in_features=emb_size, out_features=linear_out_features
+        )
+        self.v_linear = nn.Linear(
+            in_features=emb_size, out_features=linear_out_features
+        )
+
+    def forward(self, x):
+        q = self.q_linear(x)
+        k = self.k_linear(x) 
+        v = self.v_linear(x) 
+        return self._scaled_dot_product_attention(q, k, v) 
+
+{% endhighlight %}
+
+
+
+
 *Figure 6* visualizes individual neurons in the $Q$ and $K$ vectors and shows how they are used to compute the attention weights for the word *watch*.
 
 | <img src="/assets/2023-06-29-transformers/bertviz.jpg" alt="attention-weights-visualization" />| 
@@ -211,6 +249,27 @@ For instance, one head can emphasize the interaction between the subject and ver
 
 As we can see from the diagram above, each contextualized embedding with shape $[batch\\_size, seq\\_len, head\\_dim]$ is concatenated on the last dimension. The concatenation has the original dimension of the input embeddings, i.e., 
 $[batch\\_size, seq\\_len, head\\_dim * att\\_heads\\_num]$. So, if we choose to have $12$ attention heads, the linear layers will project the input embeddings of dimension $768$ into $768/12=64$ dimensions (this is done to maintain constant the computation across each head). The dimension of the contextualized embeddings after the concatenation will be $batch\\_size, seq\\_len, 12*64]=[batch\\_size, seq\\_len, 768]$. Finally, the concatenation of the contextualized embeddings is passed to a linear layer to provide additional flexibility and non-linearity to the model's output. 
+
+As before, to clear up any remaining confusion, refer to the implementation below:
+
+{% highlight python %}
+
+class MultiAttentionHead(nn.Module):
+
+    def __init__(self, emb_size, num_heads):
+        super().__init__()
+        self.att_heads = nn.ModuleList([
+            AttentionHead(emb_size, emb_size // num_heads) for i in range(num_heads)
+        ])
+        self.linear = nn.Linear(in_features=emb_size, out_features=emb_size)
+
+    def forward(self, x):
+        x = torch.cat([att_head(x) for att_head in self.att_heads], dim=-1)
+        x = self.linear(x)
+        return x
+
+{% endhighlight %}
+
 
 Finally, *Figure 8* shows another visualization to explain self-attention.
 
@@ -234,6 +293,32 @@ While this approach is straightforward to implement, there are two main variants
 1. *Absolute positional representations*: the position of the tokens can be encoded with static patterns consisting of modulated sine and cosine signals.
 2. *Relative positional representations*: to give more importance to surrounding tokens when computing an embedding. [P. He, et al. (2020)](https://arxiv.org/abs/2006.03654) implemented it modifying of the self-attention mechanism.   
 
+We can implement an embedding layer to generate token and positional embeddings and merge them togheter as follows:
+
+{% highlight python %}
+
+class Embeddings(nn.Module):
+
+    def __init__(self, vocab_size, emb_size):
+        super().__init__()
+        self.token_embeddings = nn.Embedding(vocab_size, emb_size)
+        self.positional_embeddings = nn.Embedding(vocab_size, emb_size)
+        self.layer_norm = nn.LayerNorm(emb_size, eps=1e-12)
+        self.dropout = nn.Dropout()
+
+    def forward(self, input_ids):
+        input_ids = input_ids.long()
+        seq_lenght = input_ids.size(1)
+        pos_ids = torch.arange(0, seq_lenght, dtype=torch.long).unsqueeze(0)   
+        token_embeddings = self.token_embeddings(input_ids)
+        positional_embeddings = self.positional_embeddings(pos_ids)
+        embeddings = self.layer_norm(token_embeddings+positional_embeddings)
+        embeddings = self.dropout(embeddings)
+        return embeddings
+
+{% endhighlight %}
+
+
 The *Transformer* architecture
 ==============================
 Until now, we understood the core components of the *Transformer* model, but the goal of this blog post is to explain the whole architecture. *Figure 10*, taken from [A. Vaswani, et al. (2017)](https://arxiv.org/pdf/1706.03762.pdf) shows the *Transformer* architecture.
@@ -255,11 +340,45 @@ The _Transformer_ architecture **comprises a stack (N=6) of encoders modules**. 
 
 ##### **Position-Wise Feed-Forward Network**
 
-Let's start with the position-wise feed-forward network: **it processes each contextualized embedding independently**. It comprises two fully-connected layers, called *position-wise feed-forward layers*, whose hidden size is four times the size of the embeddings, and it uses the _GELU_ activation, followed by a _Dropout_ layer. It performs a convolution-like operation with a kernel size of 1 (i.e., applying a linear transformation to the attended features). This operation helps capture complex patterns and interactions between different attended features, enhancing the model's ability to learn and represent intricate relationships within the data.
-
 | <img src="/assets/2023-06-29-transformers/feed_forward.jpg" alt="feed-forward" width="700" />| 
 |:--:|                 
 | *Figure 12*: this illustration highlights how the position-wise property of the feed-forward layer.  Credits: [jalammar.github.io](https://jalammar.github.io/illustrated-transformer/) |
+
+
+Let's start with the position-wise feed-forward network: its name derived from the fact that **processes each contextualized embedding independently**. It is just a simple two fully-connected layers network and it uses the _GELU_ activation and a _Dropout_ layer as shown in the following implementation:
+
+{% highlight python %}
+
+class PositionWiseFeedForwardLayer(nn.Module):
+
+  def __init__(self, emb_size, drop_out_prob):
+      super().__init__()
+      self.linear_1 = nn.Linear(in_features=emb_size, out_features=4*emb_size),
+      self.linear_2 = nn.Linear(in_features=4*emb_size, out_features=emb_size)
+      self.gelu = nn.GELU()
+      self.dropout = nn.Dropout(drop_out_prob) 
+
+  def forward(self, x):
+      x = self.linear_1(x)      
+      x = self.gelu(x)
+      x = self.linear_2(x)
+      x = self.dropout(x)
+      return x
+
+{% endhighlight %}
+
+Normally a linear layer processes inputs of shape (batch_size, input_dim), acting independently on each element of the batch. However, in this case we pass also the sequence dimension resulting in tensors of shape (batch_size, seq_len, hidden_dim). Hence, the linear layer will be automatically applied to each element of the sequence independently, as shown in the diagram below. 
+
+| ![Position Wise Feed Forward Network](/assets/2023-06-29-transformers/pos-wise-feed-forward.png)| 
+|:--:|                 
+| |
+
+A rule of the thum is to assign to the hidden size a dimension equal to four times the size of the embeddings: empirically it has been proved that this dimension must be increased when the models are scaled up. 
+
+This module performs a convolution-like operation with a kernel size of 1 (i.e., applying a linear transformation to the attended features). This operation helps capture complex patterns and interactions between different attended features, enhancing the model's ability to learn and represent intricate relationships within the data.
+
+
+
 
 ##### **Layer normalization and Skip connections**
 ***Layer normalization*** is a technique introduced by [J.L. Ba, et al. (2016)](https://arxiv.org/abs/1607.06450) to reduce the training time by normalizing the activities of the neurons. Unlike *batch normalization* ([S. Ioffe, C. Szegedy, (2015)](https://arxiv.org/abs/1502.03167)), it directly estimates the normalization statistics from the summed inputs to the neurons within a hidden layer without introducing new dependencies between training cases. 
@@ -277,6 +396,52 @@ As we can see from *Figure 11* the skip connections and the layer normalization 
  | <img src="/assets/2023-06-29-transformers/norm.jpg" alt="Post-layer normalization and Pre-layer normalization" width="500"/>| 
 |:--:|                 
 | *Figure 13*: Post layer normalization and Pre layer normalization. Credits: [Natural Language Processing with Transformers: Building Language Applications with Hugging Face (2022)](https://www.amazon.it/Natural-Language-Processing-Transformers-Applications/dp/1098136799/ref=sr_1_1?keywords=natural+language+processing+with+transformers&amp;qid=1688565977&amp;sprefix=Natural+lan%252Caps%252C113&amp;sr=8-1&_encoding=UTF8&tag=leobaro-21&linkCode=ur2&linkId=036ca3124da4daab7b40fe2a7c8e21de&camp=3414&creative=21718) |
+
+
+Wonderful! The implementation below shows how to build a Transformer Encoder layer using the pre-layer normalization schema:
+
+{% highlight python %}
+
+class TransformerEncoderLayer(nn.Module):
+    
+    def __init__(self, emb_size, num_heads):
+        super().__init__()
+        self.multi_attention_head = MultiAttentionHead(emb_size, num_heads)
+        self.pos_feed_forward = PositionWiseFeedForwardLayer(emb_size, 0.5)
+        self.layer_norm_1 = nn.LayerNorm(emb_size)
+        self.layer_norm_2 = nn.LayerNorm(emb_size)
+    
+    def forward(self, x):
+        x_tmp = self.layer_norm_1(x)
+        x_tmp = self.multi_attention_head(x_tmp)
+        x = x_tmp + x
+        x_tmp = self.layer_norm_2(x)
+        x_tmp = self.pos_feed_forward(x_tmp)
+        x = x_tmp + x
+        return x
+
+{% endhighlight %}
+
+And finally, several of those layers can be stacked up to create the Transformer Encoder:
+
+{% highlight python %}
+
+class TransformerEncoder(nn.Module):
+
+    def __init__(self, vocab_size, emb_size, num_encoders, num_heads_attention):
+        super().__init__()
+        self.input_embedding = Embeddings(vocab_size, emb_size)
+        self.encoder_layers = nn.ModuleList([
+            MultiAttentionHead(emb_size, num_heads_attention) for _ in range(num_encoders)
+        ])
+    
+    def forward(self, x):
+        x = self.input_embedding(x)
+        for encoder in self.encoder_layers:
+            x = encoder(x)
+        return x
+
+{% endhighlight %}
 
 
 #### The Decoder
